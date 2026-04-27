@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Quiz — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .quiz-wrap { max-width:700px; margin:0 auto; }
+  .quiz-header {
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius:var(--radius);
+    padding:1.5rem;
+    color:#fff;
+    text-align:center;
+    margin-bottom:1.5rem;
+  }
+  .quiz-header h1 { font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:.3rem; }
+  .quiz-header p  { opacity:.9; font-weight:600; }
+  .progress-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem; font-size:.9rem; font-weight:700; }
+  .q-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:1.8rem; margin-bottom:1rem; display:none; }
+  .q-card.active { display:block; animation:fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-size:.85rem; color:var(--muted); font-weight:800; margin-bottom:.5rem; }
+  .q-text   { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--ink); margin-bottom:1.2rem; line-height:1.4; }
+  .alt-btn {
+    width:100%; text-align:left; background:#f8fafc;
+    border:2px solid #e2e8f0; border-radius:14px;
+    padding:.85rem 1.1rem; font-family:'Nunito',sans-serif;
+    font-size:.95rem; font-weight:700; cursor:pointer;
+    margin-bottom:.6rem; transition:all .15s;
+    display:flex; align-items:center; gap:.7rem;
+  }
+  .alt-btn:hover { border-color:var(--amber); background:var(--amber-l); }
+  .alt-btn.selected { border-color:#6366f1; background:#ede9fe; }
+  .alt-letter {
+    width:30px; height:30px; border-radius:50%;
+    background:#e2e8f0; display:flex; align-items:center;
+    justify-content:center; font-weight:800; font-size:.85rem;
+    flex-shrink:0;
+  }
+  .alt-btn.selected .alt-letter { background:#6366f1; color:#fff; }
+  .nav-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.8rem; }
+  .q-dots { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:1rem; }
+  .q-dot {
+    width:12px; height:12px; border-radius:50%;
+    background:#e2e8f0; cursor:pointer; transition:background .2s;
+  }
+  .q-dot.answered { background:#6366f1; }
+  .q-dot.current  { background:var(--amber); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <img src="/static/images/mascote.png" alt="Mascot" style="width:70px;height:70px;border-radius:50%;border:3px solid rgba(255,255,255,.5);margin-bottom:.8rem;object-fit:cover;"
+         onerror="this.outerHTML='<div style=font-size:3.5rem;margin-bottom:.5rem>🐯</div>'">
+    <h1>🎯 Quiz — IA com Ética</h1>
+    <p>{{ aluno_nome }} | Grupo: {{ grupo.nome }}</p>
+  </div>
+
+  <div style="margin-bottom:1rem;">
+    <div class="progress-info">
+      <span id="q-counter">Pergunta 1 de {{ perguntas_json|length }}</span>
+      <span id="q-score">✅ 0 respondidas</span>
+    </div>
+    <div style="background:#e2e8f0;border-radius:50px;height:8px;overflow:hidden;">
+      <div id="q-progress" style="height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:50px;transition:width .4s;width:0%;"></div>
+    </div>
+    <div class="q-dots" id="q-dots"></div>
+  </div>
+
+  <form id="quiz-form" method="post" action="{% url 'submeter_quiz' grupo.pk %}">
+    {% csrf_token %}
+    <div id="perguntas-container"></div>
+    <div class="nav-row">
+      <button type="button" onclick="prevQ()" id="btn-prev" class="btn btn-outline" disabled>← Anterior</button>
+      <button type="button" onclick="nextQ()" id="btn-next" class="btn btn-primary">Próxima →</button>
+      <button type="button" onclick="submitQuiz()" id="btn-submit" class="btn btn-success" style="display:none;">🚀 Enviar Quiz!</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const PERGUNTAS = {{ perguntas_json|safe }};
+const LETRAS = ['A','B','C','D','E'];
+let current = 0;
+const respostas = {};
+
+function buildUI() {
+  const container = document.getElementById('perguntas-container');
+  const dots = document.getElementById('q-dots');
+  PERGUNTAS.forEach((p, i) => {
+    // Pergunta
+    const card = document.createElement('div');
+    card.className = 'q-card' + (i===0?' active':'');
+    card.id = `q-${i}`;
+    let altsHtml = p.alternativas.map((a, j) => `
+      <button type="button" class="alt-btn" id="alt-${i}-${a.id}"
+              onclick="escolher(${i}, ${a.id}, this)">
+        <span class="alt-letter">${LETRAS[j]}</span>
+        <span>${a.texto}</span>
+      </button>`).join('');
+    card.innerHTML = `<div class="q-number">Pergunta ${i+1} de ${PERGUNTAS.length}</div>
+                      <div class="q-text">${p.texto}</div>${altsHtml}`;
+    container.appendChild(card);
+    // Dot
+    const dot = document.createElement('div');
+    dot.className = 'q-dot' + (i===0?' current':'');
+    dot.id = `dot-${i}`;
+    dot.onclick = () => goTo(i);
+    dots.appendChild(dot);
+  });
+}
+
+function escolher(qIdx, altId, btn) {
+  respostas[PERGUNTAS[qIdx].id] = altId;
+  document.querySelectorAll(`#q-${qIdx} .alt-btn`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById(`dot-${qIdx}`).classList.add('answered');
+  updateStatus();
+}
+
+function goTo(idx) {
+  document.getElementById(`q-${current}`)?.classList.remove('active');
+  document.getElementById(`dot-${current}`)?.classList.remove('current');
+  current = idx;
+  document.getElementById(`q-${current}`)?.classList.add('active');
+  document.getElementById(`dot-${current}`)?.classList.add('current');
+  document.getElementById('btn-prev').disabled = current === 0;
+  const isLast = current === PERGUNTAS.length - 1;
+  document.getElementById('btn-next').style.display   = isLast ? 'none' : '';
+  document.getElementById('btn-submit').style.display = isLast ? '' : 'none';
+  updateStatus();
+}
+
+function nextQ() { if (current < PERGUNTAS.length-1) goTo(current+1); }
+function prevQ() { if (current > 0) goTo(current-1); }
+
+function updateStatus() {
+  const count = Object.keys(respostas).length;
+  document.getElementById('q-counter').textContent = `Pergunta ${current+1} de ${PERGUNTAS.length}`;
+  document.getElementById('q-score').textContent = `✅ ${count} respondida${count!==1?'s':''}`;
+  document.getElementById('q-progress').style.width = (count/PERGUNTAS.length*100)+'%';
+}
+
+function submitQuiz() {
+  const unanswered = PERGUNTAS.length - Object.keys(respostas).length;
+  if (unanswered > 0) {
+    if (!confirm(`Você ainda tem ${unanswered} pergunta(s) sem resposta. Deseja enviar assim mesmo?`)) return;
+  }
+  const input = document.createElement('input');
+  input.type = 'hidden'; input.name = 'respostas';
+  input.value = JSON.stringify(respostas);
+  document.getElementById('quiz-form').appendChild(input);
+  document.getElementById('quiz-form').submit();
+}
+
+buildUI();
+updateStatus();
+</script>
+{% endblock %}

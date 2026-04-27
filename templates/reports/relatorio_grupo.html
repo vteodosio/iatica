@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Relatório — {{ grupo.nome }}{% endblock %}
+{% block extra_css %}
+<style>
+  .report-header {
+    background:linear-gradient(135deg,var(--amber),var(--amber-d));
+    border-radius:var(--radius); padding:1.5rem; color:#fff;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;
+    margin-bottom:1.5rem;
+  }
+  .report-header h1 { font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:.2rem; }
+  .report-header p  { opacity:.9; font-weight:600; font-size:.95rem; }
+  .stat-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .stat-box { background:var(--surface); border-radius:var(--radius); padding:1.2rem; text-align:center; box-shadow:var(--shadow); border-top:4px solid var(--amber); }
+  .stat-box .val { font-family:'Fredoka One',cursive; font-size:2rem; color:var(--amber-d); }
+  .stat-box .lbl { font-size:.82rem; color:var(--muted); font-weight:700; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:var(--amber-l); color:var(--amber-d); font-weight:800; padding:.8rem 1rem; text-align:left; font-size:.9rem; }
+  td { padding:.75rem 1rem; border-bottom:1px solid #f1f5f9; font-size:.9rem; font-weight:600; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#fffbeb; }
+  .prog-bar { background:#e2e8f0; border-radius:50px; height:8px; overflow:hidden; width:80px; display:inline-block; vertical-align:middle; }
+  .prog-fill { height:100%; border-radius:50px; background:linear-gradient(90deg,var(--green),var(--green-d)); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="report-header">
+  <div>
+    <h1>📊 Relatório: {{ grupo.nome }}</h1>
+    <p>Professor(a): {{ request.user.get_full_name|default:request.user.username }} | {{ request.user.escola }}</p>
+    <p>Criado em: {{ grupo.criado_em|date:"d/m/Y" }}
+       {% if grupo.finalizado_em %}| Finalizado em: {{ grupo.finalizado_em|date:"d/m/Y" }}{% endif %}
+    </p>
+  </div>
+  <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+    <a href="{% url 'relatorio_pdf' grupo.pk %}" class="btn" style="background:#fff;color:var(--amber-d);">📄 Baixar PDF</a>
+    <a href="{% url 'detalhe_grupo' grupo.pk %}" class="btn btn-outline" style="border-color:#fff;color:#fff;">← Voltar ao Grupo</a>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="stat-box">
+    <div class="val">{{ total_membros }}</div>
+    <div class="lbl">👥 Alunos</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ total_concluiram }}</div>
+    <div class="lbl">✅ Concluíram Quiz</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ media_pontuacao|floatformat:1 }}%</div>
+    <div class="lbl">🎯 Média Geral</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">
+      <span class="badge {% if grupo.status == 'ativo' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:1rem;padding:.4rem .9rem;">
+        {{ grupo.get_status_display }}
+      </span>
+    </div>
+    <div class="lbl">📌 Status</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">📋 Desempenho dos Alunos</div>
+  <div class="card-body" style="padding:0;overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Entrou em</th>
+          <th>Lições Lidas</th>
+          <th>Quiz</th>
+          <th>Percentual</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dados_alunos %}
+        <tr>
+          <td><strong>{{ d.aluno.get_full_name|default:d.aluno.username }}</strong></td>
+          <td>{{ d.entrou_em|date:"d/m/Y H:i" }}</td>
+          <td>
+            <div class="prog-bar" title="{{ d.licoes_lidas }}/{{ d.total_licoes }}">
+              <div class="prog-fill" style="width:{% if d.total_licoes %}{% widthratio d.licoes_lidas d.total_licoes 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+            {{ d.licoes_lidas }}/{{ d.total_licoes }}
+          </td>
+          <td>
+            {% if d.tentativa %}
+              {{ d.tentativa.pontuacao }}/{{ d.tentativa.total_perguntas }}
+            {% else %}
+              <span class="badge badge-warning">Pendente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.tentativa %}
+              {% with pct=d.tentativa.percentual %}
+              <span class="badge {% if pct >= 80 %}badge-success{% elif pct >= 60 %}badge-info{% else %}badge-danger{% endif %}">
+                {{ pct }}%
+              </span>
+              {% endwith %}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">Nenhum aluno no grupo ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

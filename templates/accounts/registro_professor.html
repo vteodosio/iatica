@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Cadastro de Professor — IÁtica Kids{% endblock %}
+{% block content %}
+<div style="max-width:520px; margin:2rem auto;">
+  <div class="card">
+    <div class="card-header" style="text-align:center; font-size:1.3rem;">🍎 Cadastro de Professor</div>
+    <div class="card-body">
+      <div class="mascot-bubble">
+        <img class="mascot-img" src="/static/images/mascote.png" alt="Mascot"
+             onerror="this.outerHTML='<span style=font-size:3rem>🐯</span>'">
+        <div class="bubble-text">
+          <p>Bem-vindo(a)! 🎉 Crie sua conta para começar a ensinar seus alunos sobre <strong>ética e IA</strong>!</p>
+        </div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem;">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" name="first_name" class="form-control" placeholder="Seu nome" required>
+          </div>
+          <div class="form-group">
+            <label>Sobrenome</label>
+            <input type="text" name="last_name" class="form-control" placeholder="Seu sobrenome" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" name="email" class="form-control" placeholder="professor@escola.com.br" required>
+        </div>
+        <div class="form-group">
+          <label>Escola</label>
+          <input type="text" name="escola" class="form-control" placeholder="Nome da sua escola" required>
+        </div>
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" name="username" class="form-control" placeholder="Escolha um nome de usuário" required>
+          {% if form.username.errors %}<p class="form-error">{{ form.username.errors|join:", " }}</p>{% endif %}
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem;">
+          <div class="form-group">
+            <label>Senha</label>
+            <input type="password" name="password1" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Confirmar Senha</label>
+            <input type="password" name="password2" class="form-control" required>
+          </div>
+        </div>
+        {% if form.password2.errors %}<p class="form-error">{{ form.password2.errors|join:", " }}</p>{% endif %}
+        {% if form.non_field_errors %}<p class="form-error">{{ form.non_field_errors|join:", " }}</p>{% endif %}
+        <button type="submit" class="btn btn-primary w-100 mt-2">Criar Conta 🚀</button>
+      </form>
+      <p class="text-center mt-2" style="font-size:.9rem; color:var(--muted);">
+        Já tem conta? <a href="{% url 'login' %}" style="color:var(--amber-d); font-weight:800;">Faça login</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

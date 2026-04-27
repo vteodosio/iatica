@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}{{ grupo.nome }} — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .code-display {
+    background: var(--amber-l);
+    border: 3px dashed var(--amber);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .code-display .code-big {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3.5rem;
+    color: var(--amber-d);
+    letter-spacing: 6px;
+    display: block;
+  }
+  .code-display p { color: var(--muted); font-weight: 700; margin-top: .3rem; }
+  .member-list { list-style: none; }
+  .member-item {
+    display: flex; align-items: center; gap: .8rem;
+    padding: .7rem .5rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-weight: 600;
+  }
+  .member-item:last-child { border-bottom: none; }
+  .member-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--amber-l);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    border: 2px solid var(--amber);
+    flex-shrink: 0;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+  <a href="{% url 'dashboard_professor' %}" class="btn btn-outline btn-sm">← Voltar</a>
+  <h1 style="font-family:'Fredoka One',cursive;font-size:1.8rem;color:var(--amber-d);">{{ grupo.nome }}</h1>
+  <span class="badge {% if grupo.status == 'ativo' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:.9rem;padding:.3rem .9rem;">
+    {% if grupo.status == 'ativo' %}🟢 Ativo{% else %}🔴 Finalizado{% endif %}
+  </span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+
+  <!-- código do grupo -->
+  <div>
+    <div class="code-display">
+      <p style="font-weight:800;font-size:1rem;color:var(--ink);margin-bottom:.3rem;">📤 Compartilhe este código com seus alunos:</p>
+      <span class="code-big">{{ grupo.codigo }}</span>
+      <p>Os alunos acessam <strong>Área do Aluno</strong> e digitam este código.</p>
+    </div>
+
+    <!-- stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:1.5rem;">
+      <div class="card" style="text-align:center;padding:1rem;">
+        <div style="font-family:'Fredoka One',cursive;font-size:2rem;color:var(--amber-d);">{{ grupo.total_alunos }}</div>
+        <div style="font-size:.8rem;color:var(--muted);font-weight:700;">👥 Alunos</div>
+      </div>
+      <div class="card" style="text-align:center;padding:1rem;">
+        <div style="font-family:'Fredoka One',cursive;font-size:2rem;color:var(--green);">{{ grupo.alunos_que_completaram_quiz }}</div>
+        <div style="font-size:.8rem;color:var(--muted);font-weight:700;">✅ Quizzes</div>
+      </div>
+      <div class="card" style="text-align:center;padding:1rem;">
+        <div style="font-family:'Fredoka One',cursive;font-size:2rem;color:var(--blue);">{{ grupo.media_pontuacao|floatformat:0 }}%</div>
+        <div style="font-size:.8rem;color:var(--muted);font-weight:700;">🎯 Média</div>
+      </div>
+    </div>
+
+    <!-- ações -->
+    <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+      <a href="{% url 'relatorio_grupo' grupo.pk %}" class="btn btn-info">📊 Ver Relatório</a>
+      <a href="{% url 'relatorio_pdf' grupo.pk %}" class="btn btn-success">📄 Baixar PDF</a>
+      {% if grupo.status == 'ativo' %}
+      <form method="post" action="{% url 'finalizar_grupo' grupo.pk %}"
+            onsubmit="return confirm('Tem certeza que deseja finalizar este grupo? Os alunos não poderão mais acessá-lo.')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">🔴 Finalizar Grupo</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- lista de alunos -->
+  <div class="card">
+    <div class="card-header">👥 Alunos no Grupo ({{ membros|length }})</div>
+    <div class="card-body" style="padding:0;">
+      {% if membros %}
+      <ul class="member-list" style="padding:.5rem 1rem;">
+        {% for membro in membros %}
+        <li class="member-item">
+          <div class="member-avatar">🎒</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;">{{ membro.aluno.get_full_name|default:membro.aluno.username }}</div>
+            <div style="font-size:.78rem;color:var(--muted);">Entrou em {{ membro.entrou_em|date:"d/m/Y H:i" }}</div>
+          </div>
+          {% for t in tentativas %}
+            {% if t.aluno == membro.aluno %}
+              <span class="badge badge-success">{{ t.percentual }}%</span>
+            {% endif %}
+          {% endfor %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div style="text-align:center;padding:2rem;color:var(--muted);">
+        <div style="font-size:3rem;">📭</div>
+        <p style="font-weight:700;">Nenhum aluno entrou ainda.</p>
+        <p style="font-size:.85rem;">Compartilhe o código acima!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

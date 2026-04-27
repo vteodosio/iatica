@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}IÁtica Kids — IA com Ética!{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --amber:   #f59e0b;
+      --amber-d: #d97706;
+      --amber-l: #fef3c7;
+      --blue:    #3b82f6;
+      --blue-d:  #1d4ed8;
+      --green:   #10b981;
+      --green-d: #059669;
+      --red:     #ef4444;
+      --purple:  #8b5cf6;
+      --ink:     #1e293b;
+      --muted:   #64748b;
+      --surface: #ffffff;
+      --bg:      #fffbeb;
+      --radius:  16px;
+      --shadow:  0 4px 24px rgba(0,0,0,.10);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 3px solid var(--amber);
+      padding: .75rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 12px rgba(245,158,11,.15);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: .5rem;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem;
+      color: var(--amber-d);
+      text-decoration: none;
+    }
+    .nav-brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .nav-links { display: flex; gap: .5rem; margin-left: auto; align-items: center; }
+    .nav-links a {
+      padding: .4rem .9rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: .9rem;
+      text-decoration: none;
+      color: var(--muted);
+      transition: background .2s, color .2s;
+    }
+    .nav-links a:hover { background: var(--amber-l); color: var(--amber-d); }
+    .btn-nav {
+      background: var(--amber);
+      color: #fff !important;
+      padding: .4rem 1.1rem !important;
+      border-radius: 50px !important;
+    }
+    .btn-nav:hover { background: var(--amber-d) !important; }
+
+    /* ── MAIN ── */
+    main { flex: 1; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .65rem 1.4rem;
+      border-radius: 50px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: .95rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s, filter .15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: var(--amber); color: #fff; }
+    .btn-primary:hover { background: var(--amber-d); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-success:hover { background: var(--green-d); }
+    .btn-info    { background: var(--blue); color: #fff; }
+    .btn-info:hover { background: var(--blue-d); }
+    .btn-danger  { background: var(--red); color: #fff; }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--amber);
+      color: var(--amber-d);
+    }
+    .btn-outline:hover { background: var(--amber-l); }
+    .btn-sm { padding: .4rem .9rem; font-size: .82rem; }
+    .btn-lg { padding: .85rem 2rem; font-size: 1.05rem; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-body { padding: 1.5rem; }
+    .card-header {
+      background: linear-gradient(135deg, var(--amber), var(--amber-d));
+      color: #fff;
+      padding: 1rem 1.5rem;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+    }
+
+    /* ── ALERTS ── */
+    .messages { list-style: none; margin-bottom: 1rem; }
+    .messages li {
+      padding: .8rem 1.2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+    .messages .success { background: #d1fae5; color: #065f46; border-left: 4px solid var(--green); }
+    .messages .error   { background: #fee2e2; color: #991b1b; border-left: 4px solid var(--red); }
+    .messages .warning { background: #fef3c7; color: #92400e; border-left: 4px solid var(--amber); }
+    .messages .info    { background: #dbeafe; color: #1e40af; border-left: 4px solid var(--blue); }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 700; margin-bottom: .3rem; font-size: .9rem; }
+    .form-control {
+      width: 100%;
+      padding: .65rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      transition: border-color .2s;
+    }
+    .form-control:focus { outline: none; border-color: var(--amber); }
+    .form-error { color: var(--red); font-size: .82rem; margin-top: .2rem; font-weight: 700; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block;
+      padding: .2rem .7rem;
+      border-radius: 50px;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-info    { background: #dbeafe; color: #1e40af; }
+    .badge-danger  { background: #fee2e2; color: #991b1b; }
+
+    /* ── MASCOT ── */
+    .mascot-bubble {
+      display: flex; align-items: flex-start; gap: 1rem;
+      background: var(--amber-l);
+      border: 2px solid var(--amber);
+      border-radius: 20px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .mascot-bubble .mascot-img {
+      width: 80px; height: 80px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--amber);
+      box-shadow: 0 4px 12px rgba(245,158,11,.3);
+    }
+    .mascot-bubble .bubble-text { flex: 1; }
+    .mascot-bubble .bubble-text p { font-size: 1rem; font-weight: 600; line-height: 1.5; }
+    .mascot-bubble .bubble-text strong { color: var(--amber-d); }
+
+    /* ── LESSON CONTENT ── */
+    .lesson-body .lead-text {
+      font-size: 1.1rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 1.2rem; line-height: 1.6;
+    }
+    .highlight-box {
+      display: flex; align-items: flex-start; gap: .8rem;
+      background: var(--amber-l);
+      border-left: 4px solid var(--amber);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+    }
+    .highlight-box.green  { background: #d1fae5; border-color: var(--green); }
+    .highlight-box.purple { background: #ede9fe; border-color: var(--purple); }
+    .highlight-box.red    { background: #fee2e2; border-color: var(--red); }
+    .highlight-box .highlight-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: .1rem; }
+    .lesson-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin: 1.2rem 0 .5rem; color: var(--amber-d); }
+    .good-list, .bad-list { list-style: none; padding: 0; }
+    .good-list li, .bad-list li { padding: .4rem 0; font-weight: 600; font-size: .95rem; }
+    .example-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    .example-card {
+      background: #f8fafc; border: 2px solid #e2e8f0;
+      border-radius: 14px; padding: 1rem; text-align: center;
+    }
+    .example-card.warn { border-color: var(--amber); background: var(--amber-l); }
+    .example-card .example-icon { font-size: 2rem; display: block; margin-bottom: .4rem; }
+    .example-card h4 { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--amber-d); margin-bottom: .3rem; }
+    .example-card p { font-size: .85rem; color: var(--muted); }
+    .curiosity-box {
+      display: flex; align-items: center; gap: .8rem;
+      background: #f0f9ff; border: 2px dashed var(--blue);
+      border-radius: 14px; padding: 1rem; margin-top: 1.2rem;
+    }
+    .curiosity-box span { font-size: 2rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: .82rem;
+      color: var(--muted);
+      border-top: 2px solid var(--amber-l);
+      background: var(--surface);
+    }
+
+    /* ── UTILS ── */
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: .5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mb-1 { margin-bottom: .5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .d-flex { display: flex; }
+    .align-center { align-items: center; }
+    .gap-1 { gap: .5rem; }
+    .gap-2 { gap: 1rem; }
+    .flex-wrap { flex-wrap: wrap; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.2rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 1rem; }
+    .w-100 { width: 100%; }
+    .fw-bold { font-weight: 800; }
+    .text-muted { color: var(--muted); }
+    .text-success { color: var(--green-d); }
+    .text-danger  { color: var(--red); }
+
+    @media (max-width: 640px) {
+      nav { padding: .75rem 1rem; }
+      main { padding: 1rem; }
+      .nav-brand span { display: none; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="{% url 'home' %}">
+    <img src="/static/images/mascote.png" alt="Tiger Mascot" onerror="this.style.display='none'">
+    <span>IÁtica Kids</span>
+  </a>
+  <div class="nav-links">
+    {% if user.is_authenticated %}
+      {% if user.is_professor %}
+        <a href="{% url 'dashboard_professor' %}">📊 Dashboard</a>
+        <a href="{% url 'criar_grupo' %}">➕ Novo Grupo</a>
+      {% endif %}
+      <a href="{% url 'logout' %}" class="btn-nav">Sair</a>
+    {% else %}
+      <a href="{% url 'area_aluno' %}">🎒 Sou Aluno</a>
+      <a href="{% url 'login' %}">Entrar</a>
+      <a href="{% url 'registro_professor' %}" class="btn-nav">Sou Professor</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main>
+  {% if messages %}
+    <ul class="messages">
+      {% for msg in messages %}
+        <li class="{{ msg.tags }}">{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  🐯 IÁtica Kids &nbsp;|&nbsp; Ética e Inteligência Artificial para a Educação Básica &nbsp;|&nbsp; Feito com ❤️ para professores e alunos
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

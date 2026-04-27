@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}IÁtica Kids — IA com Ética para Crianças{% endblock %}
+{% block extra_css %}
+<style>
+  .hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+  }
+  .hero-mascot {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid var(--amber);
+    box-shadow: 0 8px 40px rgba(245,158,11,.4);
+    margin-bottom: 1.5rem;
+    animation: bounce 2.5s ease-in-out infinite;
+  }
+  .hero-mascot-fallback {
+    font-size: 8rem; line-height: 1;
+    margin-bottom: 1rem;
+    animation: bounce 2.5s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-12px); }
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--amber-d);
+    line-height: 1.1;
+    margin-bottom: .5rem;
+  }
+  .hero p.sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 540px;
+    margin: 0 auto 2rem;
+    font-weight: 600;
+  }
+  .cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .features { margin-top: 3rem; }
+  .features h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    text-align: center;
+    color: var(--amber-d);
+    margin-bottom: 1.5rem;
+  }
+  .feat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--amber);
+    transition: transform .2s;
+  }
+  .feat-card:hover { transform: translateY(-4px); }
+  .feat-card .feat-icon { font-size: 3rem; margin-bottom: .8rem; }
+  .feat-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--amber-d); margin-bottom: .4rem; }
+  .feat-card p { font-size: .9rem; color: var(--muted); font-weight: 600; }
+  .how-section {
+    margin-top: 3rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+  }
+  .how-section h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--amber-d);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 1rem; }
+  .step {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: .5rem;
+  }
+  .step-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--amber);
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step p { font-size: .9rem; font-weight: 600; color: var(--ink); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+  <img class="hero-mascot"
+       src="/static/images/mascote.png"
+       alt="Tiger mascot"
+       onerror="this.outerHTML='<div class=hero-mascot-fallback>🐯</div>'">
+  <h1>Aprender IA com Ética<br>é mais fácil do que parece!</h1>
+  <p class="sub">Uma plataforma criada para professores e alunos explorarem juntos o mundo da Inteligência Artificial com responsabilidade e diversão.</p>
+  <div class="cta-row">
+    <a href="{% url 'registro_professor' %}" class="btn btn-primary btn-lg">🍎 Sou Professor</a>
+    <a href="{% url 'area_aluno' %}" class="btn btn-info btn-lg">🎒 Sou Aluno</a>
+  </div>
+</div>
+
+<div class="features">
+  <h2>O que você vai aprender?</h2>
+  <div class="grid-3">
+    <div class="feat-card">
+      <div class="feat-icon">🤖</div>
+      <h3>O que é IA?</h3>
+      <p>Descubra como os computadores aprendem a resolver problemas!</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">✅</div>
+      <h3>Uso Responsável</h3>
+      <p>Saiba como usar a IA de forma ética e honesta no dia a dia.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔍</div>
+      <h3>Verdade ou Mentira?</h3>
+      <p>Aprenda a verificar informações e não cair em fake news de IA!</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔒</div>
+      <h3>Privacidade</h3>
+      <p>Proteja seus dados pessoais ao usar ferramentas de IA.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⚖️</div>
+      <h3>Ética e Fairness</h3>
+      <p>Entenda o que é uma IA justa e como evitar preconceitos digitais.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🏆</div>
+      <h3>Quiz Interativo</h3>
+      <p>Teste seus conhecimentos e veja o quanto você aprendeu!</p>
+    </div>
+  </div>
+</div>
+
+<div class="how-section">
+  <h2>Como Funciona?</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <p>🍎 Professor cria sua conta e um grupo de estudos</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <p>🔑 Professor compartilha o código do grupo com a turma</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <p>🎒 Alunos acessam a área do aluno e entram no grupo</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <p>📚 Alunos leem as lições e interagem com o conteúdo</p>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <p>🏆 Alunos realizam o quiz para testar o aprendizado</p>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <p>📊 Professor visualiza o relatório da turma</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

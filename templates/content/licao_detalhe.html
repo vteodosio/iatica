@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}{{ licao.titulo }} — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .lesson-layout { display:grid; grid-template-columns:260px 1fr; gap:1.5rem; align-items:start; }
+  .lesson-sidebar {
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden;
+    position:sticky; top:80px;
+  }
+  .sidebar-head {
+    background:linear-gradient(135deg,var(--amber),var(--amber-d));
+    color:#fff; padding:.8rem 1rem;
+    font-family:'Fredoka One',cursive; font-size:1rem;
+  }
+  .sidebar-list { list-style:none; padding:.5rem 0; }
+  .sidebar-list li a {
+    display:flex; align-items:center; gap:.6rem;
+    padding:.6rem 1rem; text-decoration:none; color:var(--ink);
+    font-size:.88rem; font-weight:700; transition:background .15s;
+  }
+  .sidebar-list li a:hover { background:var(--amber-l); }
+  .sidebar-list li a.active { background:var(--amber-l); color:var(--amber-d); }
+  .sidebar-list li a.lida .check { color:var(--green); }
+
+  .lesson-main { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .lesson-main-head {
+    padding:1.5rem 2rem;
+    border-bottom: 3px solid var(--amber-l);
+    display:flex; align-items:center; gap:1rem;
+  }
+  .lesson-main-head .big-icon {
+    width:64px; height:64px; border-radius:18px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.2rem; flex-shrink:0;
+  }
+  .lesson-main-head h1 { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--ink); }
+  .lesson-main-head p  { font-size:.9rem; color:var(--muted); font-weight:600; }
+  .lesson-content { padding:2rem; }
+  .lesson-nav {
+    display:flex; justify-content:space-between; align-items:center; gap:1rem;
+    padding:1rem 2rem; border-top: 2px solid var(--amber-l); flex-wrap:wrap;
+  }
+
+  @media(max-width:700px){
+    .lesson-layout { grid-template-columns:1fr; }
+    .lesson-sidebar { position:static; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap;">
+  <a href="{% url 'sala_estudo' grupo.pk %}" class="btn btn-outline btn-sm">← Voltar à Sala</a>
+  <span style="font-size:.9rem;color:var(--muted);font-weight:700;">
+    📚 Lição {{ licao.ordem }} de {{ licoes|length }}
+  </span>
+</div>
+
+<div class="mascot-bubble">
+  <img class="mascot-img" src="/static/images/mascote.png" alt="Mascot"
+       onerror="this.outerHTML='<span style=font-size:3rem>🐯</span>'">
+  <div class="bubble-text">
+    <p>Boa sorte, <strong>{{ aluno_nome }}</strong>! 🌟 Leia com atenção e aproveite o conteúdo. Ao terminar, clique em <strong>"Marcar como Lida"</strong>!</p>
+  </div>
+</div>
+
+<div class="lesson-layout">
+  <!-- Sidebar de lições -->
+  <div class="lesson-sidebar">
+    <div class="sidebar-head">📚 Todas as Lições</div>
+    <ul class="sidebar-list">
+      {% for l in licoes %}
+      <li>
+        <a href="{% url 'licao_detalhe' grupo.pk l.pk %}"
+           class="{% if l.pk == licao.pk %}active{% endif %} {% if l.pk in progresso %}lida{% endif %}">
+          <span class="check">{% if l.pk in progresso %}✅{% else %}⭕{% endif %}</span>
+          <span>{{ l.icone }} {{ l.titulo|truncatechars:30 }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="lesson-main">
+    <div class="lesson-main-head">
+      <div class="lesson-main-head big-icon" style="background:{{ licao.cor_tema }}22;">{{ licao.icone }}</div>
+      <div>
+        <h1>{{ licao.titulo }}</h1>
+        <p>{{ licao.subtitulo }}</p>
+      </div>
+    </div>
+    <div class="lesson-content">
+      {{ licao.conteudo_html|safe }}
+    </div>
+    <div class="lesson-nav">
+      <a href="{% url 'sala_estudo' grupo.pk %}" class="btn btn-outline">← Voltar à Sala</a>
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+        {% if licao.pk not in progresso %}
+        <button id="btn-marcar" onclick="marcarLida()" class="btn btn-success">
+          ✅ Marcar como Lida
+        </button>
+        {% else %}
+        <span class="btn" style="background:#d1fae5;color:#065f46;cursor:default;">✅ Lição Concluída!</span>
+        {% endif %}
+        {% if proxima %}
+        <a href="{% url 'licao_detalhe' grupo.pk proxima.pk %}" class="btn btn-primary">
+          Próxima Lição →
+        </a>
+        {% else %}
+        <a href="{% url 'iniciar_quiz' grupo.pk %}" class="btn btn-primary" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+          🎯 Fazer o Quiz!
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function marcarLida() {
+  const btn = document.getElementById('btn-marcar');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Salvando...';
+  try {
+    const resp = await fetch("{% url 'marcar_lida' grupo.pk licao.pk %}", {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      btn.textContent = '✅ Lição Concluída!';
+      btn.style.background = '#d1fae5';
+      btn.style.color = '#065f46';
+      btn.style.cursor = 'default';
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✅ Marcar como Lida';
+  }
+}
+</script>
+{% endblock %}

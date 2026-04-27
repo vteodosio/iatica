@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load quiz_tags %}
+{% block title %}Resultado do Quiz — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .result-hero {
+    text-align:center;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius:var(--radius);
+    padding:2.5rem;
+    color:#fff;
+    margin-bottom:1.5rem;
+  }
+  .result-hero .score-circle {
+    width:130px; height:130px; border-radius:50%;
+    background:rgba(255,255,255,.2);
+    border:5px solid rgba(255,255,255,.5);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    margin:0 auto 1rem;
+    font-family:'Fredoka One',cursive;
+  }
+  .result-hero .score-circle .pct { font-size:2.4rem; line-height:1; }
+  .result-hero .score-circle .pts { font-size:.9rem; opacity:.9; }
+  .result-hero h1 { font-family:'Fredoka One',cursive; font-size:2rem; margin-bottom:.3rem; }
+  .result-hero p  { opacity:.9; font-weight:600; }
+
+  .answer-card {
+    background:var(--surface); border-radius:var(--radius);
+    padding:1.2rem; margin-bottom:.8rem;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+    border-left:5px solid #e2e8f0;
+  }
+  .answer-card.correta { border-left-color:var(--green); }
+  .answer-card.errada  { border-left-color:var(--red); }
+  .answer-card .q-text { font-weight:700; margin-bottom:.8rem; font-size:.98rem; }
+  .resp-row { display:flex; align-items:center; gap:.6rem; font-size:.9rem; font-weight:600; }
+  .resp-row .chip {
+    padding:.2rem .7rem; border-radius:50px; font-size:.82rem; font-weight:800;
+  }
+  .chip-correta { background:#d1fae5; color:#065f46; }
+  .chip-errada  { background:#fee2e2; color:#991b1b; }
+  .chip-certa-resposta { background:#dbeafe; color:#1e40af; }
+</style>
+{% endblock %}
+{% block content %}
+{% with pct=tentativa.percentual %}
+<div class="result-hero">
+  <div class="score-circle">
+    <span class="pct">{{ pct }}%</span>
+    <span class="pts">{{ tentativa.pontuacao }}/{{ tentativa.total_perguntas }}</span>
+  </div>
+  {% if pct >= 80 %}
+    <h1>🏆 Incrível, {{ aluno_nome }}!</h1>
+    <p>Você arrasoou! Está pronto(a) para ser um(a) guardião(ã) da IA ética! 🌟</p>
+  {% elif pct >= 60 %}
+    <h1>😊 Muito bom, {{ aluno_nome }}!</h1>
+    <p>Ótimo desempenho! Revise as lições que tiver dúvida e continue aprendendo!</p>
+  {% else %}
+    <h1>💪 Continue aprendendo, {{ aluno_nome }}!</h1>
+    <p>Não desanime! Releia as lições e você vai arrasar da próxima vez!</p>
+  {% endif %}
+</div>
+
+<a href="{% url 'sala_estudo' tentativa.grupo.pk %}" class="btn btn-outline mb-3">← Voltar à Sala de Estudos</a>
+
+<h2 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--amber-d);margin-bottom:1rem;">📋 Suas Respostas</h2>
+
+{% for resp in respostas %}
+<div class="answer-card {% if resp.correta %}correta{% else %}errada{% endif %}">
+  <div class="q-text">
+    {% if resp.correta %}✅{% else %}❌{% endif %}
+    {{ resp.pergunta.texto }}
+  </div>
+  <div class="resp-row">
+    <span>Sua resposta:</span>
+    <span class="chip {% if resp.correta %}chip-correta{% else %}chip-errada{% endif %}">
+      {{ resp.alternativa_escolhida.texto|default:"Não respondida" }}
+    </span>
+  </div>
+  {% if not resp.correta %}
+  <div class="resp-row mt-1">
+    <span>Resposta correta:</span>
+    <span class="chip chip-certa-resposta">
+      {{ alternativas_corretas|get_item:resp.pergunta.pk|default:"—" }}
+    </span>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% endwith %}
+{% endblock %}

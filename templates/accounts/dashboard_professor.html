@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .dash-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 2rem; flex-wrap: wrap;
+  }
+  .dash-header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem; color: var(--amber-d);
+  }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .stat-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 1.2rem; text-align: center; box-shadow: var(--shadow);
+    border-top: 4px solid var(--amber);
+  }
+  .stat-card .stat-val { font-family:'Fredoka One',cursive; font-size:2.2rem; color:var(--amber-d); }
+  .stat-card .stat-lbl { font-size:.82rem; color:var(--muted); font-weight:700; }
+  .group-card {
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden;
+    border-left: 5px solid var(--amber);
+    transition: transform .2s;
+  }
+  .group-card:hover { transform: translateY(-3px); }
+  .group-card-head {
+    padding: 1rem 1.2rem;
+    display: flex; align-items: center; gap: .8rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .group-code {
+    background: var(--amber); color:#fff;
+    font-family:'Fredoka One',cursive;
+    font-size:1.2rem; padding:.2rem .8rem;
+    border-radius: 8px; letter-spacing: 2px;
+  }
+  .group-name { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--ink); }
+  .group-card-body { padding: .8rem 1.2rem; }
+  .group-meta { display:flex; gap:1rem; flex-wrap:wrap; font-size:.85rem; color:var(--muted); font-weight:600; }
+  .group-actions { display:flex; gap:.5rem; margin-top:.8rem; flex-wrap:wrap; }
+  .empty-state { text-align:center; padding: 3rem 1rem; }
+  .empty-state .empty-icon { font-size:5rem; margin-bottom:1rem; }
+  .empty-state h2 { font-family:'Fredoka One',cursive; color:var(--amber-d); margin-bottom:.5rem; }
+  .empty-state p { color:var(--muted); font-weight:600; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="dash-header">
+  <img src="/static/images/mascote.png" alt="Mascot" style="width:60px;height:60px;border-radius:50%;border:3px solid var(--amber);"
+       onerror="this.outerHTML='<span style=font-size:3rem>🐯</span>'">
+  <div>
+    <h1>Olá, Prof. {{ user.first_name }}! 👋</h1>
+    <p style="color:var(--muted);font-weight:600;">{{ user.escola }}</p>
+  </div>
+  <a href="{% url 'criar_grupo' %}" class="btn btn-primary" style="margin-left:auto;">➕ Novo Grupo</a>
+</div>
+
+{% with total=grupos.count ativos=grupos|length %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-val">{{ grupos.count }}</div>
+    <div class="stat-lbl">📚 Total de Grupos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">{{ grupos|length }}</div>
+    <div class="stat-lbl">✅ Grupos Criados</div>
+  </div>
+</div>
+{% endwith %}
+
+{% if grupos %}
+  <h2 style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--amber-d);margin-bottom:1rem;">Seus Grupos de Estudo</h2>
+  <div class="grid-2">
+    {% for grupo in grupos %}
+    <div class="group-card">
+      <div class="group-card-head">
+        <span class="group-code">{{ grupo.codigo }}</span>
+        <div>
+          <div class="group-name">{{ grupo.nome }}</div>
+          <span class="badge {% if grupo.status == 'ativo' %}badge-success{% else %}badge-warning{% endif %}">
+            {% if grupo.status == 'ativo' %}🟢 Ativo{% else %}🔴 Finalizado{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="group-card-body">
+        <div class="group-meta">
+          <span>👥 {{ grupo.total_alunos }} aluno(s)</span>
+          <span>🏆 {{ grupo.alunos_que_completaram_quiz }} completaram o quiz</span>
+          <span>📅 {{ grupo.criado_em|date:"d/m/Y" }}</span>
+        </div>
+        <div class="group-actions">
+          <a href="{% url 'detalhe_grupo' grupo.pk %}" class="btn btn-outline btn-sm">👁️ Ver Grupo</a>
+          <a href="{% url 'relatorio_grupo' grupo.pk %}" class="btn btn-info btn-sm">📊 Relatório</a>
+          <a href="{% url 'relatorio_pdf' grupo.pk %}" class="btn btn-success btn-sm">📄 PDF</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>Nenhum grupo criado ainda!</h2>
+    <p>Crie seu primeiro grupo de estudos e compartilhe o código com seus alunos.</p>
+    <a href="{% url 'criar_grupo' %}" class="btn btn-primary btn-lg mt-3">➕ Criar Meu Primeiro Grupo</a>
+  </div>
+{% endif %}
+{% endblock %}

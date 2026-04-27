@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Criar Grupo — IÁtica Kids{% endblock %}
+{% block content %}
+<div style="max-width:520px; margin:2rem auto;">
+  <div class="card">
+    <div class="card-header" style="text-align:center;">➕ Criar Grupo de Estudos</div>
+    <div class="card-body">
+      <div class="mascot-bubble">
+        <img class="mascot-img" src="/static/images/mascote.png" alt="Mascot"
+             onerror="this.outerHTML='<span style=font-size:3rem>🐯</span>'">
+        <div class="bubble-text">
+          <p>Crie um grupo, compartilhe o <strong>código</strong> com seus alunos e a aventura começa! 🚀</p>
+        </div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Nome do Grupo</label>
+          <input type="text" name="nome" class="form-control" placeholder="Ex: Turma 5ºA — Manhã" required>
+        </div>
+        <div class="form-group">
+          <label>Descrição <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
+          <textarea name="descricao" class="form-control" rows="3" placeholder="Descreva o grupo, turma ou objetivo..."></textarea>
+        </div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary">🚀 Criar Grupo</button>
+          <a href="{% url 'dashboard_professor' %}" class="btn btn-outline">← Voltar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Área do Aluno — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .aluno-hero { text-align:center; padding: 2rem 1rem; }
+  .aluno-hero h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,4vw,2.8rem); color:var(--amber-d); margin-bottom:.5rem; }
+  .aluno-hero p { font-size:1.05rem; color:var(--muted); font-weight:600; max-width:420px; margin:0 auto 1.5rem; }
+  .code-form {
+    max-width: 440px; margin: 0 auto;
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden;
+  }
+  .code-form .form-top {
+    background: linear-gradient(135deg,var(--amber),var(--amber-d));
+    padding: 1.5rem; text-align:center; color:#fff;
+  }
+  .code-form .form-top h2 { font-family:'Fredoka One',cursive; font-size:1.4rem; }
+  .code-form .form-body { padding: 1.5rem; }
+  .code-input {
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    border: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: .6rem;
+    width: 100%;
+    color: var(--amber-d);
+    background: var(--amber-l);
+  }
+  .code-input:focus { outline:none; border-color:var(--amber-d); }
+  .mascot-big {
+    width: 130px; height: 130px;
+    border-radius: 50%; object-fit:cover;
+    border: 5px solid var(--amber);
+    box-shadow: 0 8px 32px rgba(245,158,11,.35);
+    animation: bounce 2.5s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+</style>
+{% endblock %}
+{% block content %}
+<div class="aluno-hero">
+  <img class="mascot-big" src="/static/images/mascote.png" alt="Mascot"
+       onerror="this.outerHTML='<div style=font-size:7rem;animation:bounce 2.5s ease-in-out infinite;margin-bottom:1rem>🐯</div>'">
+  <h1>Olá, aventureiro(a)! 🚀</h1>
+  <p>Peça o código do grupo para o seu professor e vamos aprender sobre IA juntos!</p>
+</div>
+
+<div class="code-form">
+  <div class="form-top">
+    <h2>🔑 Entrar no Grupo de Estudos</h2>
+    <p style="font-size:.9rem;opacity:.9;margin-top:.3rem;">Digite o código que seu professor enviou</p>
+  </div>
+  <div class="form-body">
+    <form method="post" action="{% url 'entrar_grupo' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label style="text-align:center;display:block;font-size:1rem;">Seu Nome</label>
+        <input type="text" name="nome_aluno" class="form-control" placeholder="Como você se chama?" required
+               style="text-align:center;font-size:1.1rem;font-weight:700;">
+      </div>
+      <div class="form-group">
+        <label style="text-align:center;display:block;font-size:1rem;">Código do Grupo</label>
+        <input type="text" name="codigo" class="code-input" placeholder="ABC123"
+               maxlength="6" required autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary w-100 btn-lg" style="margin-top:.5rem;">
+        Entrar na Aventura 🎮
+      </button>
+    </form>
+  </div>
+</div>
+
+<div style="max-width:440px;margin:1.5rem auto 0;text-align:center;">
+  <p style="font-size:.9rem;color:var(--muted);font-weight:600;">
+    Você é professor(a)?
+    <a href="{% url 'login' %}" style="color:var(--amber-d);font-weight:800;">Faça login aqui</a>
+  </p>
+</div>
+{% endblock %}

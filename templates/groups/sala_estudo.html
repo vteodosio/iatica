@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Sala de Estudos — {{ grupo.nome }}{% endblock %}
+{% block extra_css %}
+<style>
+  .sala-header {
+    background: linear-gradient(135deg, var(--amber), var(--amber-d));
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    color: #fff;
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .sala-header img { width:70px;height:70px;border-radius:50%;border:3px solid rgba(255,255,255,.5);object-fit:cover; }
+  .sala-header h1 { font-family:'Fredoka One',cursive; font-size:1.6rem; margin-bottom:.2rem; }
+  .sala-header p { opacity:.9; font-weight:600; font-size:.95rem; }
+  .progress-bar-wrap {
+    background: rgba(255,255,255,.25); border-radius: 50px;
+    height: 10px; margin-top: .8rem; overflow:hidden;
+  }
+  .progress-bar-fill { height:100%; background:#fff; border-radius:50px; transition:width .5s; }
+
+  .licao-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .licao-card {
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden;
+    border-left: 5px solid #e2e8f0;
+    text-decoration: none; color: var(--ink);
+    transition: transform .2s, box-shadow .2s;
+    display:block;
+  }
+  .licao-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
+  .licao-card.lida { border-left-color: var(--green); }
+  .licao-card-top {
+    padding: 1.2rem 1.2rem .8rem;
+    display:flex; align-items:center; gap:.8rem;
+  }
+  .licao-icon {
+    width:50px; height:50px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; flex-shrink:0;
+  }
+  .licao-card h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--ink); }
+  .licao-card p  { font-size:.82rem; color:var(--muted); font-weight:600; margin-top:.2rem; }
+  .licao-card-foot {
+    padding: .6rem 1.2rem;
+    background: #f8fafc;
+    font-size:.8rem; font-weight:700;
+    display:flex; align-items:center; gap:.4rem;
+  }
+  .licao-card.lida .licao-card-foot { background:#d1fae5; color:#065f46; }
+
+  .quiz-section {
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius: var(--radius);
+    padding: 2rem;
+    color: #fff;
+    text-align: center;
+  }
+  .quiz-section h2 { font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:.5rem; }
+  .quiz-section p  { font-size:1rem; opacity:.9; font-weight:600; margin-bottom:1.2rem; }
+</style>
+{% endblock %}
+{% block content %}
+{% with total_licoes=licoes|length %}
+<div class="sala-header">
+  <img src="/static/images/mascote.png" alt="Mascot"
+       onerror="this.outerHTML='<span style=font-size:3rem>🐯</span>'">
+  <div style="flex:1;">
+    <h1>Olá, {{ aluno_nome }}! 🎒</h1>
+    <p>Grupo: <strong>{{ grupo.nome }}</strong></p>
+    <div style="display:flex; align-items:center; gap:.8rem; margin-top:.5rem;">
+      <span style="font-size:.9rem;font-weight:700;">📚 {{ progresso|length }}/{{ total_licoes }} lições lidas</span>
+    </div>
+    <div class="progress-bar-wrap" style="width:min(300px,100%);">
+      <div class="progress-bar-fill"
+           style="width:{% if total_licoes %}{% widthratio progresso|length total_licoes 100 %}{% else %}0{% endif %}%;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--amber-d);margin-bottom:1rem;">📚 Lições</h2>
+<div class="licao-grid">
+  {% for licao in licoes %}
+  <a href="{% url 'licao_detalhe' grupo.pk licao.pk %}" class="licao-card {% if licao.pk in progresso %}lida{% endif %}">
+    <div class="licao-card-top">
+      <div class="licao-icon" style="background:{{ licao.cor_tema }}22;">
+        {{ licao.icone }}
+      </div>
+      <div>
+        <h3>{{ licao.titulo }}</h3>
+        <p>{{ licao.subtitulo }}</p>
+      </div>
+    </div>
+    <div class="licao-card-foot">
+      {% if licao.pk in progresso %}
+        ✅ Lição concluída!
+      {% else %}
+        ▶️ Clique para ler
+      {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% endwith %}
+
+{% if tentativa_concluida %}
+  <div style="background:#d1fae5;border:2px solid var(--green);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-bottom:1.5rem;">
+    <div style="font-size:3rem;">🏆</div>
+    <h2 style="font-family:'Fredoka One',cursive;color:var(--green-d);font-size:1.4rem;">Quiz concluído!</h2>
+    <p style="font-weight:700;color:var(--green-d);font-size:1.1rem;">
+      Você acertou {{ tentativa_concluida.pontuacao }}/{{ tentativa_concluida.total_perguntas }} perguntas ({{ tentativa_concluida.percentual }}%)
+    </p>
+    <a href="{% url 'resultado_quiz' tentativa_concluida.pk %}" class="btn btn-success mt-2">Ver Resultado Detalhado</a>
+  </div>
+{% else %}
+  <div class="quiz-section">
+    <div style="font-size:3rem;margin-bottom:.5rem;">🎯</div>
+    <h2>Pronto para o Quiz?</h2>
+    <p>Teste tudo que você aprendeu nas lições! São 8 perguntas sobre IA e ética.</p>
+    {% if progresso|length >= 1 %}
+      <a href="{% url 'iniciar_quiz' grupo.pk %}" class="btn btn-lg" style="background:#fff;color:#6366f1;font-size:1.1rem;">
+        🚀 Começar o Quiz!
+      </a>
+    {% else %}
+      <div style="background:rgba(255,255,255,.2);border-radius:12px;padding:1rem;display:inline-block;">
+        <p style="margin:0;font-size:.95rem;">📚 Leia pelo menos 1 lição para liberar o quiz!</p>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
