@@ -103,5 +103,5 @@ if os.environ.get('DATABASE_URL'):
         ssl_require=True
     )
 
-ALLOWED_HOSTS = os.envorn.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
