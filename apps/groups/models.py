@@ -1,3 +1,4 @@
+import decimal
 import random
 import string
 from django.db import models
@@ -51,17 +52,29 @@ class GrupoEstudo(models.Model):
             finalizado_em__isnull=False
         ).values('aluno').distinct().count()
 
+
     def media_pontuacao(self):
         from apps.quiz.models import TentativaQuiz
         from django.db.models import Avg
+
         resultado = TentativaQuiz.objects.filter(
             grupo=self,
             finalizado_em__isnull=False
         ).aggregate(media=Avg('pontuacao'))
-        return resultado['media'] or 0
-    #no banco, as questões acertadas são salvas com 0-8
-    #aqui, a função tá pegando este valor fazendo a media
-    #necessario criar uma escala para definir o valor de cada acerto dividido por 8
+
+        perguntas = TentativaQuiz.objects.filter(
+            grupo=self,
+            finalizado_em__isnull=False
+        ).aggregate(media=Avg('total_perguntas'))
+
+        media_pontuacao = resultado['media'] or 0  # ✅ extrai o valor
+        media_perguntas = perguntas['media'] or 0  # ✅ extrai o valor
+
+        if media_perguntas == 0:
+            return 0  # ✅ evita divisão por zero
+
+        return round((media_pontuacao / media_perguntas) * 100)  # ✅ calcula o percentual
+
 
 
 class MembroGrupo(models.Model):
