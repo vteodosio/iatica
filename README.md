@@ -64,8 +64,4 @@ Plataforma web interativa para professores e alunos explorarem juntos o mundo da
 2. **✅ Usando a IA com Responsabilidade** — Uso ético e honesto
 3. **🔍 A IA Mente? Entendendo as Alucinações** — Como checar informações
 4. **🔒 Privacidade e Segurança com a IA** — Protegendo dados pessoais
-5. **⚖️ Ética e Fairness na IA** — Viés, diversidade e justiça
-
----
-
-*Desenvolvido com ❤️ para professores e alunos da educação básica.*
+5. **⚖️ Ética e justiça nas respostas da IA** — Viés, diversidade e justiça
