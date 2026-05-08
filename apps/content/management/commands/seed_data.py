@@ -153,7 +153,7 @@ LICOES = [
         "ordem": 5,
         "icone": "⚖️",
         "cor_tema": "#8b5cf6",
-        "titulo": "Ética e Fairness na IA",
+        "titulo": "Ética e Justiça nas Respostas da IA",
         "subtitulo": "A IA pode ser justa ou injusta?",
         "conteudo_html": """
 <div class="lesson-body">
