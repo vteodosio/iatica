@@ -66,7 +66,7 @@ def relatorio_pdf(request, pk):
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph(f"Professor: {request.user.get_full_name() or request.user.username}", styles['Normal']))
     story.append(Paragraph(f"Escola: {request.user.escola or '—'}", styles['Normal']))
-    story.append(Paragraph(f"Gerado em: {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+    story.append(Paragraph(f"Gerado em: {timezone.localtime().now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
     story.append(Spacer(1, 0.5*cm))
 
     concluiram = tentativas.values('aluno').distinct().count()
