@@ -1,15 +1,16 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+
+from apps.groups.access import get_aluno_membro, require_aluno_membro
 from .models import Licao, ProgressoLicao
-from apps.groups.models import GrupoEstudo
 
 
 def licao_detalhe(request, grupo_pk, licao_pk):
-    aluno_id = request.session.get('aluno_id')
-    if not aluno_id:
-        return redirect('area_aluno')
+    result = require_aluno_membro(request, grupo_pk)
+    if not isinstance(result, tuple):
+        return result
+    aluno_id, grupo = result
 
-    grupo = get_object_or_404(GrupoEstudo, pk=grupo_pk, status=GrupoEstudo.ATIVO)
     licao = get_object_or_404(Licao, pk=licao_pk, ativa=True)
     licoes = Licao.objects.filter(ativa=True).order_by('ordem')
 
@@ -39,14 +40,16 @@ def licao_detalhe(request, grupo_pk, licao_pk):
 
 def marcar_lida(request, grupo_pk, licao_pk):
     """AJAX endpoint para marcar lição como lida."""
-    if request.method == 'POST':
-        aluno_id = request.session.get('aluno_id')
-        if not aluno_id:
-            return JsonResponse({'ok': False})
-        grupo = get_object_or_404(GrupoEstudo, pk=grupo_pk)
-        licao = get_object_or_404(Licao, pk=licao_pk)
-        ProgressoLicao.objects.get_or_create(aluno_id=aluno_id, licao=licao, grupo=grupo)
-        total = Licao.objects.filter(ativa=True).count()
-        lidas = ProgressoLicao.objects.filter(aluno_id=aluno_id, grupo=grupo).count()
-        return JsonResponse({'ok': True, 'lidas': lidas, 'total': total})
-    return JsonResponse({'ok': False})
+    if request.method != 'POST':
+        return JsonResponse({'ok': False})
+
+    result = get_aluno_membro(request, grupo_pk)
+    if result is None:
+        return JsonResponse({'ok': False})
+    aluno_id, grupo = result
+
+    licao = get_object_or_404(Licao, pk=licao_pk)
+    ProgressoLicao.objects.get_or_create(aluno_id=aluno_id, licao=licao, grupo=grupo)
+    total = Licao.objects.filter(ativa=True).count()
+    lidas = ProgressoLicao.objects.filter(aluno_id=aluno_id, grupo=grupo).count()
+    return JsonResponse({'ok': True, 'lidas': lidas, 'total': total})

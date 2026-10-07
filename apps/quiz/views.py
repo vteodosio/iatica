@@ -1,18 +1,19 @@
 import json
 import random
+
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
 from django.utils import timezone
+
+from apps.groups.access import get_aluno_membro, require_aluno_membro
 from .models import Quiz, Pergunta, Alternativa, TentativaQuiz, RespostaAluno
-from apps.groups.models import GrupoEstudo
 
 
 def iniciar_quiz(request, grupo_pk):
-    aluno_id = request.session.get('aluno_id')
-    if not aluno_id:
-        return redirect('area_aluno')
-
-    grupo = get_object_or_404(GrupoEstudo, pk=grupo_pk, status=GrupoEstudo.ATIVO)
+    result = require_aluno_membro(request, grupo_pk)
+    if not isinstance(result, tuple):
+        return result
+    aluno_id, grupo = result
 
     # Verifica se já concluiu
     tentativa_anterior = TentativaQuiz.objects.filter(
@@ -61,12 +62,15 @@ def submeter_quiz(request, grupo_pk):
     if request.method != 'POST':
         return redirect('area_aluno')
 
-    aluno_id = request.session.get('aluno_id')
+    result = get_aluno_membro(request, grupo_pk)
+    if result is None:
+        return redirect('area_aluno')
+    aluno_id, _grupo = result
+
     tentativa_id = request.session.get('tentativa_id')
-    if not aluno_id or not tentativa_id:
+    if not tentativa_id:
         return redirect('area_aluno')
 
-    grupo = get_object_or_404(GrupoEstudo, pk=grupo_pk)
     tentativa = get_object_or_404(TentativaQuiz, pk=tentativa_id, aluno_id=aluno_id)
 
     if tentativa.finalizado_em:
@@ -100,9 +104,18 @@ def submeter_quiz(request, grupo_pk):
 
 def resultado_quiz(request, tentativa_pk):
     aluno_id = request.session.get('aluno_id')
+    if not aluno_id:
+        messages.warning(request, 'Acesse a área do aluno e informe o código do grupo.')
+        return redirect('area_aluno')
+
     tentativa = get_object_or_404(TentativaQuiz, pk=tentativa_pk)
 
-    respostas = tentativa.respostas.select_related('pergunta', 'alternativa_escolhida').all()
+    # Apenas o dono da tentativa pode visualizar o resultado.
+    if tentativa.aluno_id != aluno_id:
+        messages.error(request, 'Você não tem permissão para ver este resultado.')
+        return redirect('area_aluno')
+
+    respostas = tentativa.respostas.select_related('pergunta__licao', 'alternativa_escolhida').all()
     alternativas_corretas = {}
     for r in respostas:
         alt_correta = r.pergunta.alternativas.filter(correta=True).first()

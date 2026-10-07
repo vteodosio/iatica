@@ -12,7 +12,7 @@
   }
   .code-form .form-top {
     background: linear-gradient(135deg,var(--amber),var(--amber-d));
-    padding: 1.5rem; text-align:center; color:#fff;
+    padding: 1.5rem; text-align:center; color:var(--on-soft);
   }
   .code-form .form-top h2 { font-family:'Fredoka One',cursive; font-size:1.4rem; }
   .code-form .form-body { padding: 1.5rem; }
@@ -58,8 +58,8 @@
     <form method="post" action="{% url 'entrar_grupo' %}">
       {% csrf_token %}
       <div class="form-group">
-        <label style="text-align:center;display:block;font-size:1rem;">Seu Nome</label>
-        <input type="text" name="nome_aluno" class="form-control" placeholder="Como você se chama?" required
+        <label style="text-align:center;display:block;font-size:1rem;">Seu nome ou apelido</label>
+        <input type="text" name="nome_aluno" class="form-control" placeholder="Como você quer ser chamado(a)?" required
                style="text-align:center;font-size:1.1rem;font-weight:700;">
       </div>
       <div class="form-group">
@@ -67,6 +67,15 @@
         <input type="text" name="codigo" class="code-input" placeholder="ABC123"
                maxlength="6" required autocomplete="off">
       </div>
+      <div style="background:var(--amber-l);border:1px solid var(--amber);border-radius:12px;padding:.9rem 1rem;margin:.75rem 0;text-align:left;font-size:.85rem;line-height:1.55;">
+        <strong>🔒 Privacidade:</strong> usamos apenas seu nome/apelido e o código do grupo —
+        nada de endereço, telefone ou documento. Só o(a) professor(a) do grupo vê seus resultados.
+        Peça para um adulto te acompanhar.
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:.5rem;font-size:.85rem;font-weight:700;text-align:left;margin-bottom:.5rem;">
+        <input type="checkbox" name="consentimento" value="on" required style="margin-top:.15rem;width:auto;">
+        <span>Li o aviso de privacidade e quero entrar.</span>
+      </label>
       <button type="submit" class="btn btn-primary w-100 btn-lg" style="margin-top:.5rem;">
         Entrar na Aventura 🎮
       </button>
