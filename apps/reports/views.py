@@ -1,8 +1,10 @@
+from collections import defaultdict
+
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from apps.groups.models import GrupoEstudo, MembroGrupo
-from apps.quiz.models import TentativaQuiz, RespostaAluno
+from apps.quiz.models import TentativaQuiz, RespostaAluno, Pergunta
 from apps.content.models import ProgressoLicao, Licao
 
 
@@ -28,9 +30,37 @@ def relatorio_grupo(request, pk):
             'tentativa': tentativa,
         })
 
+    # Estatística por questão — mostra o que a turma mais errou.
+    respostas = RespostaAluno.objects.filter(
+        tentativa__grupo=grupo,
+        tentativa__finalizado_em__isnull=False,
+    ).select_related('pergunta__licao')
+
+    por_questao = defaultdict(lambda: {'total': 0, 'corretas': 0})
+    for resposta in respostas:
+        por_questao[resposta.pergunta_id]['total'] += 1
+        if resposta.correta:
+            por_questao[resposta.pergunta_id]['corretas'] += 1
+
+    dados_perguntas = []
+    for pergunta in Pergunta.objects.filter(id__in=por_questao.keys()).select_related('licao'):
+        est = por_questao[pergunta.id]
+        total = est['total']
+        corretas = est['corretas']
+        dados_perguntas.append({
+            'pergunta': pergunta,
+            'total': total,
+            'corretas': corretas,
+            'percentual': round(corretas / total * 100) if total else 0,
+            'licao': pergunta.licao,
+        })
+    # Ordena do mais errado para o menos errado (mais útil ao professor).
+    dados_perguntas.sort(key=lambda d: d['percentual'])
+
     context = {
         'grupo': grupo,
         'dados_alunos': dados_alunos,
+        'dados_perguntas': dados_perguntas,
         'total_membros': membros.count(),
         'total_concluiram': tentativas.values('aluno').distinct().count(),
         'media_pontuacao': grupo.media_pontuacao(),
@@ -96,7 +126,7 @@ def relatorio_pdf(request, pk):
     for membro in membros:
         tentativa = tentativas.filter(aluno=membro.aluno).first()
         licoes_lidas = ProgressoLicao.objects.filter(aluno=membro.aluno, grupo=grupo).count()
-        nome = membro.aluno.get_full_name() or membro.aluno.username
+        nome = membro.aluno.nome_exibicao()
         pontuacao = f"{tentativa.pontuacao}/{tentativa.total_perguntas}" if tentativa else "—"
         percentual = f"{tentativa.percentual()}%" if tentativa else "—"
         rows.append([nome, f"{licoes_lidas}/{total_licoes}", pontuacao, percentual])

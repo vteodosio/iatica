@@ -5,6 +5,19 @@ from django.conf import settings
 class Pergunta(models.Model):
     texto = models.TextField(verbose_name='Texto da Pergunta')
     ordem = models.PositiveIntegerField(default=0)
+    explicacao = models.TextField(
+        blank=True,
+        verbose_name='Explicação',
+        help_text='Por que a resposta correta está certa. Exibida ao aluno no resultado.',
+    )
+    licao = models.ForeignKey(
+        'content.Licao',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='perguntas',
+        verbose_name='Lição relacionada',
+    )
 
     class Meta:
         verbose_name = 'Pergunta'

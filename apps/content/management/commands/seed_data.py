@@ -1,3 +1,5 @@
+import sys
+
 from django.core.management.base import BaseCommand
 from apps.content.models import Licao
 from apps.quiz.models import Pergunta, Alternativa
@@ -196,6 +198,8 @@ PERGUNTAS = [
     {
         "texto": "O que é Inteligência Artificial?",
         "ordem": 1,
+        "explicacao": "A IA é quando ensinamos os computadores a aprender com informações — parecido com o jeito que nós aprendemos na escola.",
+        "licao_ordem": 1,
         "alternativas": [
             {"texto": "Um robô que tem sentimentos humanos", "correta": False},
             {"texto": "Quando ensinamos computadores a resolver problemas e aprender com informações", "correta": True},
@@ -206,6 +210,8 @@ PERGUNTAS = [
     {
         "texto": "Qual destes é um exemplo de uso RESPONSÁVEL da IA?",
         "ordem": 2,
+        "explicacao": "Usar a IA de forma responsável é usá-la para aprender e crescer — como pedir ajuda para entender algo — e nunca para enganar ou prejudicar.",
+        "licao_ordem": 2,
         "alternativas": [
             {"texto": "Copiar a resposta da IA e dizer que é sua", "correta": False},
             {"texto": "Compartilhar seu endereço com um chatbot", "correta": False},
@@ -216,6 +222,8 @@ PERGUNTAS = [
     {
         "texto": "O que é uma 'alucinação' da IA?",
         "ordem": 3,
+        "explicacao": "Alucinação é quando a IA inventa uma informação que parece verdadeira, mas é falsa. Por isso sempre precisamos checar!",
+        "licao_ordem": 3,
         "alternativas": [
             {"texto": "Quando a IA fica com medo de alguma coisa", "correta": False},
             {"texto": "Quando a IA inventa informações que parecem verdadeiras mas são falsas", "correta": True},
@@ -226,6 +234,8 @@ PERGUNTAS = [
     {
         "texto": "Qual informação NUNCA deve ser compartilhada com uma IA?",
         "ordem": 4,
+        "explicacao": "Nunca compartilhe senhas, endereço ou dados pessoais com uma IA.",
+        "licao_ordem": 4,
         "alternativas": [
             {"texto": "Sua cor favorita", "correta": False},
             {"texto": "O nome de um personagem de desenho que você gosta", "correta": False},
@@ -236,6 +246,8 @@ PERGUNTAS = [
     {
         "texto": "O que é 'viés' (preconceito) na IA?",
         "ordem": 5,
+        "explicacao": "Viés é quando a IA trata pessoas de forma injusta por ter aprendido com dados cheios de preconceitos.",
+        "licao_ordem": 5,
         "alternativas": [
             {"texto": "Quando a IA fica com preguiça de responder", "correta": False},
             {"texto": "Quando a IA trata pessoas de forma injusta por causa de preconceitos nos dados", "correta": True},
@@ -246,6 +258,8 @@ PERGUNTAS = [
     {
         "texto": "Antes de usar uma informação que a IA deu em um trabalho escolar, o que você deve fazer?",
         "ordem": 6,
+        "explicacao": "Sempre verifique informações importantes em pelo menos 2 fontes confiáveis antes de usar.",
+        "licao_ordem": 3,
         "alternativas": [
             {"texto": "Usar direto, pois a IA sempre está certa", "correta": False},
             {"texto": "Verificar em pelo menos 2 outras fontes confiáveis", "correta": True},
@@ -256,6 +270,8 @@ PERGUNTAS = [
     {
         "texto": "Por que é importante que a IA seja treinada com dados de pessoas de culturas diversas?",
         "ordem": 7,
+        "explicacao": "Treinar a IA com dados de pessoas diversas ajuda a torná-la mais justa e representativa para todos.",
+        "licao_ordem": 5,
         "alternativas": [
             {"texto": "Para a IA aprender mais idiomas", "correta": False},
             {"texto": "Para tornar a IA mais justa e representativa para todos", "correta": True},
@@ -266,6 +282,8 @@ PERGUNTAS = [
     {
         "texto": "Se seus pais nunca ouviram falar de uma ferramenta de IA que você quer usar, o que é mais correto?",
         "ordem": 8,
+        "explicacao": "Sempre converse com um adulto antes de usar uma nova ferramenta de IA.",
+        "licao_ordem": 4,
         "alternativas": [
             {"texto": "Usar escondido, pois você sabe mais de tecnologia", "correta": False},
             {"texto": "Conversar com eles e explicar o que é a ferramenta antes de usar", "correta": True},
@@ -280,6 +298,11 @@ class Command(BaseCommand):
     help = 'Popula o banco de dados com lições e quiz padrão sobre ética e IA'
 
     def handle(self, *args, **kwargs):
+        # No Windows o console usa cp1252 e quebra ao imprimir emojis (✅/🔄).
+        try:
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        except Exception:
+            pass
         self.stdout.write('Criando lições...')
         for dados in LICOES:
             licao, criada = Licao.objects.update_or_create(
@@ -299,9 +322,14 @@ class Command(BaseCommand):
         self.stdout.write('\nCriando banco de perguntas padrão...')
         from apps.quiz.models import Pergunta, Alternativa
         for dados in PERGUNTAS:
+            licao = Licao.objects.filter(ordem=dados.get('licao_ordem')).first()
             pergunta, criada = Pergunta.objects.update_or_create(
                 ordem=dados['ordem'],
-                defaults={'texto': dados['texto']}
+                defaults={
+                    'texto': dados['texto'],
+                    'explicacao': dados.get('explicacao', ''),
+                    'licao': licao,
+                }
             )
             Alternativa.objects.filter(pergunta=pergunta).delete()
             for alt in dados['alternativas']:

@@ -5,10 +5,10 @@
 <style>
   .result-hero {
     text-align:center;
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    background:var(--grad-indigo);
     border-radius:var(--radius);
     padding:2.5rem;
-    color:#fff;
+    color:var(--on-soft);
     margin-bottom:1.5rem;
   }
   .result-hero .score-circle {
@@ -28,7 +28,7 @@
     background:var(--surface); border-radius:var(--radius);
     padding:1.2rem; margin-bottom:.8rem;
     box-shadow:0 2px 10px rgba(0,0,0,.06);
-    border-left:5px solid #e2e8f0;
+    border-left:5px solid var(--border);
   }
   .answer-card.correta { border-left-color:var(--green); }
   .answer-card.errada  { border-left-color:var(--red); }
@@ -37,9 +37,9 @@
   .resp-row .chip {
     padding:.2rem .7rem; border-radius:50px; font-size:.82rem; font-weight:800;
   }
-  .chip-correta { background:#d1fae5; color:#065f46; }
-  .chip-errada  { background:#fee2e2; color:#991b1b; }
-  .chip-certa-resposta { background:#dbeafe; color:#1e40af; }
+  .chip-correta { background:var(--soft-green-bg); color:var(--soft-green-fg); }
+  .chip-errada  { background:var(--soft-red-bg);   color:var(--soft-red-fg); }
+  .chip-certa-resposta { background:var(--soft-blue-bg); color:var(--soft-blue-fg); }
 </style>
 {% endblock %}
 {% block content %}
@@ -83,6 +83,19 @@
     <span class="chip chip-certa-resposta">
       {{ alternativas_corretas|get_item:resp.pergunta.pk|default:"—" }}
     </span>
+  </div>
+  {% endif %}
+  {% if resp.pergunta.explicacao %}
+  <div class="resp-row mt-1" style="align-items:flex-start;">
+    <span>💡 Por quê:</span>
+    <span style="font-weight:500;">{{ resp.pergunta.explicacao }}</span>
+  </div>
+  {% endif %}
+  {% if resp.pergunta.licao %}
+  <div class="mt-1">
+    <a href="{% url 'licao_detalhe' tentativa.grupo.pk resp.pergunta.licao.pk %}" class="btn btn-outline btn-sm">
+      📚 Revisar lição: {{ resp.pergunta.licao.titulo }}
+    </a>
   </div>
   {% endif %}
 </div>
