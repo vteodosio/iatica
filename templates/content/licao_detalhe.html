@@ -10,7 +10,7 @@
   }
   .sidebar-head {
     background:linear-gradient(135deg,var(--amber),var(--amber-d));
-    color:#fff; padding:.8rem 1rem;
+    color:var(--on-soft); padding:.8rem 1rem;
     font-family:'Fredoka One',cursive; font-size:1rem;
   }
   .sidebar-list { list-style:none; padding:.5rem 0; }
@@ -101,14 +101,14 @@
           ✅ Marcar como Lida
         </button>
         {% else %}
-        <span class="btn" style="background:#d1fae5;color:#065f46;cursor:default;">✅ Lição Concluída!</span>
+        <span class="btn" style="background:var(--soft-green-bg);color:var(--soft-green-fg);cursor:default;">✅ Lição Concluída!</span>
         {% endif %}
         {% if proxima %}
         <a href="{% url 'licao_detalhe' grupo.pk proxima.pk %}" class="btn btn-primary">
           Próxima Lição →
         </a>
         {% else %}
-        <a href="{% url 'iniciar_quiz' grupo.pk %}" class="btn btn-primary" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+        <a href="{% url 'iniciar_quiz' grupo.pk %}" class="btn btn-primary" style="background:var(--grad-indigo);">
           🎯 Fazer o Quiz!
         </a>
         {% endif %}
@@ -132,8 +132,8 @@ async function marcarLida() {
     const data = await resp.json();
     if (data.ok) {
       btn.textContent = '✅ Lição Concluída!';
-      btn.style.background = '#d1fae5';
-      btn.style.color = '#065f46';
+      btn.style.background = 'var(--soft-green-bg)';
+      btn.style.color = 'var(--soft-green-fg)';
       btn.style.cursor = 'default';
     }
   } catch(e) {

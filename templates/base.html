@@ -1,13 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light" class="iatica">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}IÁtica Kids — IA com Ética!{% endblock %}</title>
+  <script>
+    /* Aplica o tema antes da pintura para evitar piscada (FOUC). */
+    (function () {
+      try {
+        var t = localStorage.getItem('iatica-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
   <style>
+    /* ══════════════════════════════════════════════════════════════
+       TOKENS — tema claro (padrão)
+       ══════════════════════════════════════════════════════════════ */
     :root {
+      /* Cores de marca */
       --amber:   #f59e0b;
       --amber-d: #d97706;
       --amber-l: #fef3c7;
@@ -17,13 +33,95 @@
       --green-d: #059669;
       --red:     #ef4444;
       --purple:  #8b5cf6;
+      --indigo:  #6366f1;
+
+      /* Texto e superfícies */
       --ink:     #1e293b;
       --muted:   #64748b;
       --surface: #ffffff;
       --bg:      #fffbeb;
+      --surface-2:#f8fafc;   /* cartões internos, botões neutros */
+      --border:  #e2e8f0;    /* bordas de campos e cartões */
+      --border-2:#f1f5f9;    /* divisórias de tabela/lista */
+      --track:   #e2e8f0;    /* trilhas de barra de progresso */
+
+      /* Fundos suaves (badges, avisos, destaques) */
+      --soft-green-bg:  #d1fae5;
+      --soft-green-fg:  #065f46;
+      --soft-red-bg:    #fee2e2;
+      --soft-red-fg:    #991b1b;
+      --soft-amber-bg:  #fef3c7;
+      --soft-amber-fg:  #92400e;
+      --soft-blue-bg:   #dbeafe;
+      --soft-blue-fg:   #1e40af;
+      --soft-purple-bg: #ede9fe;
+      --soft-indigo-fg: #6366f1;
+      --soft-cyan-bg:   #f0f9ff;  /* caixa de curiosidade */
+
+      /* Texto sobre fundos coloridos (gradientes, navbar) */
+      --on-accent: #ffffff;
+      --on-soft:   #ffffff;
+
+      /* Gradientes dos "heróis" coloridos */
+      --grad-amber: linear-gradient(135deg, #f59e0b, #d97706);
+      --grad-blue:  linear-gradient(135deg, #3b82f6, #1d4ed8);
+      --grad-green: linear-gradient(135deg, #10b981, #059669);
+      --grad-indigo:linear-gradient(135deg, #6366f1, #8b5cf6);
+
       --radius:  16px;
       --shadow:  0 4px 24px rgba(0,0,0,.10);
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       TOKENS — tema escuro
+       ══════════════════════════════════════════════════════════════ */
+    [data-theme="dark"].iatica {
+      /* Marca: tons ajustados para contraste sobre fundo escuro */
+      --amber:   #fbbf24;
+      --amber-d: #fcd34d;
+      --amber-l: #3a2f18;
+      --blue:    #60a5fa;
+      --blue-d:  #93c5fd;
+      --green:   #34d399;
+      --green-d: #6ee7b7;
+      --red:     #f87171;
+      --purple:  #a78bfa;
+      --indigo:  #818cf8;
+
+      --ink:     #e8edf5;
+      --muted:   #94a3b8;
+      --surface: #161d2b;
+      --bg:      #0d1219;
+      --surface-2:#1d2635;
+      --border:  #2c3749;
+      --border-2:#232d3d;
+      --track:   #2c3749;
+
+      --soft-green-bg:  #14382c;
+      --soft-green-fg:  #6ee7b7;
+      --soft-red-bg:    #3d1f22;
+      --soft-red-fg:    #fca5a5;
+      --soft-amber-bg:  #3a2f18;
+      --soft-amber-fg:  #fcd34d;
+      --soft-blue-bg:   #1b2f47;
+      --soft-blue-fg:   #93c5fd;
+      --soft-purple-bg: #2c2547;
+      --soft-indigo-fg: #a5b4fc;
+      --soft-cyan-bg:   #14283a;
+
+      /* Texto escuro sobre botões/destaques que ficam CLAROS no dark */
+      --on-accent: #16202e;
+      --on-soft:   #16202e;
+
+      --grad-amber: linear-gradient(135deg, #fbbf24, #f59e0b);
+      --grad-blue:  linear-gradient(135deg, #60a5fa, #3b82f6);
+      --grad-green: linear-gradient(135deg, #34d399, #10b981);
+      --grad-indigo:linear-gradient(135deg, #818cf8, #6366f1);
+
+      --shadow:  0 4px 24px rgba(0,0,0,.45);
+      color-scheme: dark;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -33,6 +131,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background-color .25s ease, color .25s ease;
     }
 
     /* ── NAVBAR ── */
@@ -45,6 +144,7 @@
       gap: 1rem;
       box-shadow: 0 2px 12px rgba(245,158,11,.15);
       position: sticky; top: 0; z-index: 100;
+      transition: background-color .25s ease;
     }
     .nav-brand {
       display: flex; align-items: center; gap: .5rem;
@@ -67,11 +167,31 @@
     .nav-links a:hover { background: var(--amber-l); color: var(--amber-d); }
     .btn-nav {
       background: var(--amber);
-      color: #fff !important;
+      color: var(--on-accent) !important;
       padding: .4rem 1.1rem !important;
       border-radius: 50px !important;
     }
     .btn-nav:hover { background: var(--amber-d) !important; }
+
+    /* ── ALTERNADOR DE TEMA ── */
+    .theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; flex-shrink: 0;
+      padding: 0; border-radius: 50%;
+      background: var(--amber-l);
+      border: 2px solid var(--border);
+      color: var(--amber-d);
+      cursor: pointer;
+      transition: background .2s, transform .15s, border-color .2s, color .2s;
+    }
+    .theme-toggle:hover { background: var(--amber); color: var(--on-accent); transform: translateY(-2px); }
+    .theme-toggle:active { transform: translateY(0); }
+    .theme-toggle:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+    .theme-toggle svg { width: 20px; height: 20px; display: block; }
+    /* Alterna qual ícone aparece conforme o tema ativo */
+    .theme-toggle .icon-sun  { display: none; }
+    [data-theme="dark"].iatica .theme-toggle .icon-sun  { display: block; }
+    [data-theme="dark"].iatica .theme-toggle .icon-moon { display: none; }
 
     /* ── MAIN ── */
     main { flex: 1; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
@@ -91,13 +211,13 @@
     }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
     .btn:active { transform: translateY(0); }
-    .btn-primary { background: var(--amber); color: #fff; }
+    .btn-primary { background: var(--amber); color: var(--on-accent); }
     .btn-primary:hover { background: var(--amber-d); }
-    .btn-success { background: var(--green); color: #fff; }
+    .btn-success { background: var(--green); color: var(--on-accent); }
     .btn-success:hover { background: var(--green-d); }
-    .btn-info    { background: var(--blue); color: #fff; }
+    .btn-info    { background: var(--blue); color: var(--on-accent); }
     .btn-info:hover { background: var(--blue-d); }
-    .btn-danger  { background: var(--red); color: #fff; }
+    .btn-danger  { background: var(--red); color: var(--on-accent); }
     .btn-outline {
       background: transparent;
       border: 2px solid var(--amber);
@@ -116,8 +236,8 @@
     }
     .card-body { padding: 1.5rem; }
     .card-header {
-      background: linear-gradient(135deg, var(--amber), var(--amber-d));
-      color: #fff;
+      background: var(--grad-amber);
+      color: var(--on-soft);
       padding: 1rem 1.5rem;
       font-family: 'Fredoka One', cursive;
       font-size: 1.2rem;
@@ -131,10 +251,10 @@
       font-weight: 700;
       margin-bottom: .4rem;
     }
-    .messages .success { background: #d1fae5; color: #065f46; border-left: 4px solid var(--green); }
-    .messages .error   { background: #fee2e2; color: #991b1b; border-left: 4px solid var(--red); }
-    .messages .warning { background: #fef3c7; color: #92400e; border-left: 4px solid var(--amber); }
-    .messages .info    { background: #dbeafe; color: #1e40af; border-left: 4px solid var(--blue); }
+    .messages .success { background: var(--soft-green-bg); color: var(--soft-green-fg); border-left: 4px solid var(--green); }
+    .messages .error   { background: var(--soft-red-bg);   color: var(--soft-red-fg);   border-left: 4px solid var(--red); }
+    .messages .warning { background: var(--soft-amber-bg); color: var(--soft-amber-fg); border-left: 4px solid var(--amber); }
+    .messages .info    { background: var(--soft-blue-bg);  color: var(--soft-blue-fg);  border-left: 4px solid var(--blue); }
 
     /* ── FORMS ── */
     .form-group { margin-bottom: 1rem; }
@@ -142,12 +262,15 @@
     .form-control {
       width: 100%;
       padding: .65rem 1rem;
-      border: 2px solid #e2e8f0;
+      border: 2px solid var(--border);
       border-radius: 12px;
       font-family: 'Nunito', sans-serif;
       font-size: .95rem;
-      transition: border-color .2s;
+      background: var(--surface);
+      color: var(--ink);
+      transition: border-color .2s, background-color .25s, color .25s;
     }
+    .form-control::placeholder { color: var(--muted); opacity: .8; }
     .form-control:focus { outline: none; border-color: var(--amber); }
     .form-error { color: var(--red); font-size: .82rem; margin-top: .2rem; font-weight: 700; }
 
@@ -159,10 +282,10 @@
       font-size: .78rem;
       font-weight: 800;
     }
-    .badge-success { background: #d1fae5; color: #065f46; }
-    .badge-warning { background: #fef3c7; color: #92400e; }
-    .badge-info    { background: #dbeafe; color: #1e40af; }
-    .badge-danger  { background: #fee2e2; color: #991b1b; }
+    .badge-success { background: var(--soft-green-bg); color: var(--soft-green-fg); }
+    .badge-warning { background: var(--soft-amber-bg); color: var(--soft-amber-fg); }
+    .badge-info    { background: var(--soft-blue-bg);  color: var(--soft-blue-fg); }
+    .badge-danger  { background: var(--soft-red-bg);   color: var(--soft-red-fg); }
 
     /* ── MASCOT ── */
     .mascot-bubble {
@@ -199,16 +322,16 @@
       padding: 1rem 1.2rem;
       margin: 1rem 0;
     }
-    .highlight-box.green  { background: #d1fae5; border-color: var(--green); }
-    .highlight-box.purple { background: #ede9fe; border-color: var(--purple); }
-    .highlight-box.red    { background: #fee2e2; border-color: var(--red); }
+    .highlight-box.green  { background: var(--soft-green-bg);  border-color: var(--green); }
+    .highlight-box.purple { background: var(--soft-purple-bg); border-color: var(--purple); }
+    .highlight-box.red    { background: var(--soft-red-bg);    border-color: var(--red); }
     .highlight-box .highlight-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: .1rem; }
     .lesson-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin: 1.2rem 0 .5rem; color: var(--amber-d); }
     .good-list, .bad-list { list-style: none; padding: 0; }
     .good-list li, .bad-list li { padding: .4rem 0; font-weight: 600; font-size: .95rem; }
     .example-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
     .example-card {
-      background: #f8fafc; border: 2px solid #e2e8f0;
+      background: var(--surface-2); border: 2px solid var(--border);
       border-radius: 14px; padding: 1rem; text-align: center;
     }
     .example-card.warn { border-color: var(--amber); background: var(--amber-l); }
@@ -217,7 +340,7 @@
     .example-card p { font-size: .85rem; color: var(--muted); }
     .curiosity-box {
       display: flex; align-items: center; gap: .8rem;
-      background: #f0f9ff; border: 2px dashed var(--blue);
+      background: var(--soft-cyan-bg); border: 2px dashed var(--blue);
       border-radius: 14px; padding: 1rem; margin-top: 1.2rem;
     }
     .curiosity-box span { font-size: 2rem; }
@@ -280,6 +403,18 @@
       <a href="{% url 'login' %}">Entrar</a>
       <a href="{% url 'registro_professor' %}" class="btn-nav">Sou Professor</a>
     {% endif %}
+    <button type="button" class="theme-toggle" id="theme-toggle"
+            aria-label="Alternar modo escuro" title="Alternar modo escuro">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+      </svg>
+    </button>
   </div>
 </nav>
 
@@ -295,11 +430,48 @@
   {% block content %}{% endblock %}
 </main>
 
-{#<footer>#}
-{#  🐯 IÁtica Kids &nbsp;|&nbsp; Ética e Inteligência Artificial para a Educação Básica &nbsp;|&nbsp; Feito com ❤️ para professores e alunos#}
-{#</footer>#}
-{#</footer>#}
-
 {% block extra_js %}{% endblock %}
+
+<script>
+  /* Alternador de tema: alterna, persiste e mantém o botão acessível. */
+  (function () {
+    var root = document.documentElement;
+    var btn  = document.getElementById('theme-toggle');
+
+    function current() { return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+
+    function syncLabel() {
+      if (!btn) return;
+      var next = current() === 'dark' ? 'claro' : 'escuro';
+      btn.setAttribute('aria-label', 'Alternar para modo ' + next);
+      btn.setAttribute('title', 'Alternar para modo ' + next);
+    }
+
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var next = current() === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('iatica-theme', next); } catch (e) {}
+        syncLabel();
+      });
+    }
+
+    /* Segue o sistema enquanto o usuário não escolher manualmente. */
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var onChange = function (e) {
+        var saved = null;
+        try { saved = localStorage.getItem('iatica-theme'); } catch (err) {}
+        if (saved === 'light' || saved === 'dark') return;
+        root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        syncLabel();
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    }
+
+    syncLabel();
+  })();
+</script>
 </body>
 </html>

@@ -4,10 +4,10 @@
 <style>
   .quiz-wrap { max-width:700px; margin:0 auto; }
   .quiz-header {
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    background:var(--grad-indigo);
     border-radius:var(--radius);
     padding:1.5rem;
-    color:#fff;
+    color:var(--on-soft);
     text-align:center;
     margin-bottom:1.5rem;
   }
@@ -20,29 +20,30 @@
   .q-number { font-size:.85rem; color:var(--muted); font-weight:800; margin-bottom:.5rem; }
   .q-text   { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--ink); margin-bottom:1.2rem; line-height:1.4; }
   .alt-btn {
-    width:100%; text-align:left; background:#f8fafc;
-    border:2px solid #e2e8f0; border-radius:14px;
+    width:100%; text-align:left; background:var(--surface-2);
+    border:2px solid var(--border); border-radius:14px;
     padding:.85rem 1.1rem; font-family:'Nunito',sans-serif;
     font-size:.95rem; font-weight:700; cursor:pointer;
+    color:var(--ink);
     margin-bottom:.6rem; transition:all .15s;
     display:flex; align-items:center; gap:.7rem;
   }
   .alt-btn:hover { border-color:var(--amber); background:var(--amber-l); }
-  .alt-btn.selected { border-color:#6366f1; background:#ede9fe; }
+  .alt-btn.selected { border-color:var(--indigo); background:var(--soft-purple-bg); }
   .alt-letter {
     width:30px; height:30px; border-radius:50%;
-    background:#e2e8f0; display:flex; align-items:center;
+    background:var(--track); display:flex; align-items:center;
     justify-content:center; font-weight:800; font-size:.85rem;
     flex-shrink:0;
   }
-  .alt-btn.selected .alt-letter { background:#6366f1; color:#fff; }
+  .alt-btn.selected .alt-letter { background:var(--indigo); color:var(--on-accent); }
   .nav-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.8rem; }
   .q-dots { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:1rem; }
   .q-dot {
     width:12px; height:12px; border-radius:50%;
-    background:#e2e8f0; cursor:pointer; transition:background .2s;
+    background:var(--track); cursor:pointer; transition:background .2s;
   }
-  .q-dot.answered { background:#6366f1; }
+  .q-dot.answered { background:var(--indigo); }
   .q-dot.current  { background:var(--amber); }
 </style>
 {% endblock %}
@@ -60,8 +61,8 @@
       <span id="q-counter">Pergunta 1 de {{ perguntas_json|length }}</span>
       <span id="q-score">✅ 0 respondidas</span>
     </div>
-    <div style="background:#e2e8f0;border-radius:50px;height:8px;overflow:hidden;">
-      <div id="q-progress" style="height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:50px;transition:width .4s;width:0%;"></div>
+    <div style="background:var(--track);border-radius:50px;height:8px;overflow:hidden;">
+      <div id="q-progress" style="height:100%;background:linear-gradient(90deg,var(--indigo),var(--purple));border-radius:50px;transition:width .4s;width:0%;"></div>
     </div>
     <div class="q-dots" id="q-dots"></div>
   </div>
