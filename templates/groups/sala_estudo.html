@@ -27,7 +27,7 @@
     border-left: 5px solid var(--border);
     text-decoration: none; color: var(--ink);
     transition: transform .2s, box-shadow .2s;
-    display:block;
+    display:flex; flex-direction:column;
   }
   .licao-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
   .licao-card.lida { border-left-color: var(--green); }
@@ -47,6 +47,7 @@
     background: var(--surface-2);
     font-size:.8rem; font-weight:700;
     display:flex; align-items:center; gap:.4rem;
+    margin-top:auto;
   }
   .licao-card.lida .licao-card-foot { background:var(--soft-green-bg); color:var(--soft-green-fg); }
 
