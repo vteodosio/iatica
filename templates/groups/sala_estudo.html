@@ -40,8 +40,9 @@
     display:flex; align-items:center; justify-content:center;
     font-size:1.6rem; flex-shrink:0;
   }
-  .licao-card h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--ink); }
-  .licao-card p  { font-size:.82rem; color:var(--muted); font-weight:600; margin-top:.2rem; }
+  .licao-card-text { min-width:0; }
+  .licao-card h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--ink); overflow-wrap:break-word; }
+  .licao-card p  { font-size:.82rem; color:var(--muted); font-weight:600; margin-top:.2rem; overflow-wrap:break-word; }
   .licao-card-foot {
     padding: .6rem 1.2rem;
     background: var(--surface-2);
@@ -89,7 +90,7 @@
       <div class="licao-icon" style="background:{{ licao.cor_tema }}22;">
         {{ licao.icone }}
       </div>
-      <div>
+      <div class="licao-card-text">
         <h3>{{ licao.titulo }}</h3>
         <p>{{ licao.subtitulo }}</p>
       </div>
