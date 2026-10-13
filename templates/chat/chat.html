@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Conversar com a IA — IÁtica Kids{% endblock %}
+{% block extra_css %}
+<style>
+  .chat-wrap { max-width: 780px; margin: 0 auto; }
+
+  .chat-header {
+    background: var(--grad-indigo);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    color: var(--on-soft);
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .chat-header .avatar { font-size: 2.6rem; }
+  .chat-header h1 { font-family:'Fredoka One',cursive; font-size: 1.5rem; margin-bottom: .2rem; }
+  .chat-header p  { opacity: .9; font-weight: 600; font-size: .92rem; }
+
+  .chat-thread {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.2rem;
+    margin-bottom: 1.25rem;
+  }
+  .chat-empty { text-align: center; color: var(--muted); font-weight: 600; padding: 1.6rem 1rem; }
+
+  .bubble {
+    max-width: 84%;
+    border-radius: 16px;
+    padding: .7rem 1rem;
+    margin-bottom: .7rem;
+    font-weight: 600;
+    font-size: .95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .bubble-aluno {
+    background: var(--amber-l);
+    border: 1px solid var(--amber);
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble-ia {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+  .bubble-bloqueada {
+    background: var(--soft-red-bg);
+    color: var(--soft-red-fg);
+    border-color: var(--red);
+  }
+  .bubble-rotulo {
+    display: block;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .65;
+    margin-bottom: .2rem;
+  }
+
+  .aviso {
+    display: flex; align-items: flex-start; gap: .6rem;
+    background: var(--soft-blue-bg);
+    color: var(--soft-blue-fg);
+    border-left: 4px solid var(--blue);
+    border-radius: 12px;
+    padding: .8rem 1rem;
+    font-size: .88rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+  }
+
+  .pergunta-titulo {
+    font-family:'Fredoka One',cursive;
+    font-size: 1.15rem;
+    color: var(--amber-d);
+    margin-bottom: .7rem;
+  }
+  .pergunta-grid { display: grid; gap: .6rem; }
+  .pergunta-grid form { margin: 0; }
+  .pergunta-btn {
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: .8rem 1rem;
+    font-family:'Nunito',sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .15s;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .pergunta-btn:hover {
+    border-color: var(--indigo);
+    background: var(--soft-purple-bg);
+    transform: translateX(3px);
+  }
+  .pergunta-btn .conceito {
+    margin-left: auto;
+    font-size: .7rem;
+    font-weight: 800;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="chat-wrap">
+
+  <div class="chat-header">
+    <div class="avatar">🤖</div>
+    <div style="flex:1;">
+      <h1>Conversar com a IA</h1>
+      <p>Olá, {{ aluno_nome }}! Escolha uma pergunta e veja o que a IA responde.</p>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <span style="font-size:1.2rem;">🤔</span>
+    <span>
+      A IA pode errar — <strong>confira sempre!</strong>
+      As conversas ficam visíveis para o seu professor(a).
+    </span>
+  </div>
+
+  <div class="chat-thread">
+    {% for i in interacoes %}
+      <div class="bubble bubble-aluno">
+        <span class="bubble-rotulo">Você</span>{{ i.pergunta.texto }}
+      </div>
+      <div class="bubble bubble-ia {% if i.bloqueada %}bubble-bloqueada{% endif %}">
+        <span class="bubble-rotulo">{% if i.bloqueada %}🛡️ Filtro de segurança{% else %}🤖 Tuca (IA){% endif %}</span>{{ i.resposta }}
+      </div>
+    {% empty %}
+      <div class="chat-empty">
+        <div style="font-size:2.5rem;">💬</div>
+        <p>Nenhuma pergunta ainda. Escolha uma abaixo para começar!</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="pergunta-titulo">❓ Perguntas para fazer</div>
+  <div class="pergunta-grid">
+    {% for p in perguntas %}
+      <form method="post" action="{% url 'chat' grupo.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="pergunta_id" value="{{ p.pk }}">
+        <button type="submit" class="pergunta-btn">
+          <span>💬</span>
+          <span>{{ p.texto }}</span>
+          {% if p.conceito %}<span class="conceito">{{ p.conceito }}</span>{% endif %}
+        </button>
+      </form>
+    {% empty %}
+      <p style="color:var(--muted);font-weight:600;">
+        Nenhuma pergunta disponível ainda. Peça ao seu professor(a).
+      </p>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:1.5rem;">
+    <a href="{% url 'sala_estudo' grupo.pk %}" class="btn btn-outline">← Voltar à Sala de Estudos</a>
+  </div>
+
+</div>
+{% endblock %}

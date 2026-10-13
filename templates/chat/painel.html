@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Chat IA — {{ grupo.nome }}{% endblock %}
+{% block extra_css %}
+<style>
+  .painel-header {
+    background: var(--grad-indigo);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    color: var(--on-soft);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .painel-header h1 { font-family:'Fredoka One',cursive; font-size: 1.6rem; margin-bottom: .2rem; }
+  .painel-header p  { opacity: .9; font-weight: 600; font-size: .92rem; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-box { background: var(--surface); border-radius: var(--radius); padding: 1rem; text-align: center; box-shadow: var(--shadow); border-top: 4px solid var(--amber); }
+  .stat-box .val { font-family:'Fredoka One',cursive; font-size: 1.8rem; color: var(--amber-d); }
+  .stat-box .lbl { font-size: .8rem; color: var(--muted); font-weight: 700; }
+
+  .interacao {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem 1.1rem;
+    margin-bottom: .8rem;
+    border-left: 5px solid var(--indigo);
+  }
+  .interacao.bloqueada { border-left-color: var(--red); }
+  .interacao-top {
+    display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+    margin-bottom: .5rem;
+  }
+  .interacao-pergunta { font-weight: 800; font-size: .95rem; }
+  .interacao-resposta { font-size: .92rem; color: var(--ink); white-space: pre-wrap; line-height: 1.5; }
+  .interacao-meta { font-size: .75rem; color: var(--muted); font-weight: 700; margin-top: .5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="painel-header">
+  <div>
+    <h1>💬 Chat IA — {{ grupo.nome }}</h1>
+    <p>O que a turma perguntou e o que a IA respondeu.</p>
+  </div>
+  <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+    <a href="{% url 'detalhe_grupo' grupo.pk %}" class="btn" style="background:var(--surface);color:var(--amber-d);">← Voltar ao Grupo</a>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="stat-box">
+    <div class="val">{{ total }}</div>
+    <div class="lbl">💬 Interações</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ total_bloqueadas }}</div>
+    <div class="lbl">🛡️ Bloqueadas</div>
+  </div>
+</div>
+
+{% if interacoes %}
+  {% for i in interacoes %}
+  <div class="interacao {% if i.bloqueada %}bloqueada{% endif %}">
+    <div class="interacao-top">
+      <span class="badge badge-info">{{ i.aluno.nome_exibicao }}</span>
+      <span class="interacao-pergunta">{{ i.pergunta.texto }}</span>
+      {% if i.bloqueada %}<span class="badge badge-danger">🛡️ bloqueada</span>{% endif %}
+    </div>
+    <div class="interacao-resposta">{{ i.resposta }}</div>
+    <div class="interacao-meta">
+      {{ i.criado_em|date:"d/m/Y H:i" }}
+      {% if i.pergunta.conceito %}| conceito: {{ i.pergunta.conceito }}{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:2.5rem;color:var(--muted);">
+      <div style="font-size:3rem;">📭</div>
+      <p style="font-weight:700;">Nenhuma interação ainda.</p>
+      <p style="font-size:.88rem;">Quando os alunos usarem o chat, as conversas aparecem aqui.</p>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

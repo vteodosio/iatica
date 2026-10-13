@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'apps.content',
     'apps.quiz',
     'apps.reports',
+    'apps.chat',
 ]
 
 MIDDLEWARE = [
@@ -102,4 +103,17 @@ if os.environ.get('DATABASE_URL'):
     )
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+
+# ── Chat IA (LLM) ─────────────────────────────────────────────────────────────
+# Padrão 'mock': roda sem chave e sem custo (dev, testes e apresentação).
+# Para usar um provedor real: LLM_PROVIDER=deepseek + LLM_API_KEY.
+LLM_PROVIDER = config('LLM_PROVIDER', default='mock')
+LLM_API_KEY = config('LLM_API_KEY', default='')
+LLM_BASE_URL = config('LLM_BASE_URL', default='https://api.deepseek.com')
+LLM_MODEL = config('LLM_MODEL', default='deepseek-flash')
+LLM_MAX_TOKENS = config('LLM_MAX_TOKENS', default=400, cast=int)
+LLM_TIMEOUT = config('LLM_TIMEOUT', default=30, cast=int)
+CHAT_ATIVO = config('CHAT_ATIVO', default=True, cast=bool)
+CHAT_RESPOSTA_MAX = config('CHAT_RESPOSTA_MAX', default=1200, cast=int)
 

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -161,4 +162,5 @@ def sala_estudo(request, pk):
         'quiz': quiz,
         'tentativa_concluida': tentativa_concluida,
         'aluno_nome': request.session.get('aluno_nome', 'Aluno'),
+        'chat_ativo': settings.CHAT_ATIVO,
     })

@@ -12,4 +12,5 @@ urlpatterns = [
     path('conteudo/', include('apps.content.urls')),
     path('quiz/', include('apps.quiz.urls')),
     path('relatorios/', include('apps.reports.urls')),
+    path('chat/', include('apps.chat.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

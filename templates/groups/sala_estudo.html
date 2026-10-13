@@ -52,6 +52,17 @@
   }
   .licao-card.lida .licao-card-foot { background:var(--soft-green-bg); color:var(--soft-green-fg); }
 
+  .chat-cta {
+    background: var(--surface);
+    border: 2px solid var(--indigo);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .chat-cta h2 { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--indigo); margin-bottom:.4rem; }
+  .chat-cta p { font-size:.95rem; color:var(--muted); font-weight:600; margin-bottom:1rem; }
+
   .quiz-section {
     background: var(--grad-indigo);
     border-radius: var(--radius);
@@ -107,6 +118,17 @@
 </div>
 
 {% endwith %}
+
+{% if chat_ativo and progresso|length >= 1 %}
+<div class="chat-cta">
+  <div style="font-size:2.5rem;">🤖</div>
+  <h2>Conversar com a IA</h2>
+  <p>Faça uma pergunta para uma inteligência artificial de verdade e veja como ela responde!</p>
+  <a href="{% url 'chat' grupo.pk %}" class="btn btn-lg" style="background:var(--indigo);color:var(--on-accent);font-size:1.05rem;">
+    💬 Abrir o chat
+  </a>
+</div>
+{% endif %}
 
 {% if tentativa_concluida %}
   <div style="background:var(--soft-green-bg);border:2px solid var(--green);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-bottom:1.5rem;">

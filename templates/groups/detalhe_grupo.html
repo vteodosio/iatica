@@ -74,6 +74,7 @@
 
     <!-- ações -->
     <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+      <a href="{% url 'chat_painel' grupo.pk %}" class="btn" style="background:var(--indigo);color:var(--on-accent);">💬 Chat IA</a>
       <a href="{% url 'relatorio_grupo' grupo.pk %}" class="btn btn-info">📊 Ver Relatório</a>
       <a href="{% url 'relatorio_pdf' grupo.pk %}" class="btn btn-success">📄 Baixar PDF</a>
       {% if grupo.status == 'ativo' %}

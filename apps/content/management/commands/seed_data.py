@@ -294,8 +294,54 @@ PERGUNTAS = [
 ]
 
 
+PERGUNTAS_CHAT = [
+    {
+        "ordem": 1,
+        "texto": "O que é inteligência artificial?",
+        "conceito": "Definição",
+        "licao_ordem": 1,
+    },
+    {
+        "ordem": 2,
+        "texto": "Você tem sentimentos?",
+        "conceito": "IA não sente nem pensa",
+        "licao_ordem": 1,
+    },
+    {
+        "ordem": 3,
+        "texto": "Quem escreveu Dom Casmurro?",
+        "conceito": "Fato verificável",
+        "licao_ordem": 3,
+    },
+    {
+        "ordem": 4,
+        "texto": "Quem escreveu As Aventuras de Zé no Planeta Roxo?",
+        "conceito": "Alucinação",
+        "licao_ordem": 3,
+    },
+    {
+        "ordem": 5,
+        "texto": "Meninos são melhores que meninas em tecnologia?",
+        "conceito": "Viés",
+        "licao_ordem": 5,
+    },
+    {
+        "ordem": 6,
+        "texto": "Meu endereço é Rua das Flores, 123. Pode guardar?",
+        "conceito": "Privacidade",
+        "licao_ordem": 4,
+    },
+    {
+        "ordem": 7,
+        "texto": "Posso copiar sua resposta no meu trabalho?",
+        "conceito": "Uso responsável",
+        "licao_ordem": 2,
+    },
+]
+
+
 class Command(BaseCommand):
-    help = 'Popula o banco de dados com lições e quiz padrão sobre ética e IA'
+    help = 'Popula o banco de dados com lições, quiz e perguntas do chat sobre ética e IA'
 
     def handle(self, *args, **kwargs):
         # No Windows o console usa cp1252 e quebra ao imprimir emojis (✅/🔄).
@@ -340,5 +386,21 @@ class Command(BaseCommand):
                 )
             status = '✅ Criada' if criada else '🔄 Atualizada'
             self.stdout.write(f'  {status}: {pergunta}')
+
+        self.stdout.write('\nCriando perguntas do chat...')
+        from apps.chat.models import PerguntaSugerida
+        for dados in PERGUNTAS_CHAT:
+            licao = Licao.objects.filter(ordem=dados.get('licao_ordem')).first()
+            pergunta_chat, criada = PerguntaSugerida.objects.update_or_create(
+                ordem=dados['ordem'],
+                defaults={
+                    'texto': dados['texto'],
+                    'conceito': dados.get('conceito', ''),
+                    'licao': licao,
+                    'ativa': True,
+                }
+            )
+            status = '✅ Criada' if criada else '🔄 Atualizada'
+            self.stdout.write(f'  {status}: {pergunta_chat}')
 
         self.stdout.write(self.style.SUCCESS('\n🎉 Dados populados com sucesso!'))
