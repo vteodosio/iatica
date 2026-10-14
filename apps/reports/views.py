@@ -57,6 +57,28 @@ def relatorio_grupo(request, pk):
     # Ordena do mais errado para o menos errado (mais útil ao professor).
     dados_perguntas.sort(key=lambda d: d['percentual'])
 
+    # Chat IA — uso por aluno e conceitos mais perguntados.
+    from apps.chat.models import Interacao
+
+    interacoes_chat = list(Interacao.objects.filter(grupo=grupo).select_related('pergunta'))
+    chat_por_aluno = defaultdict(lambda: {'total': 0, 'errou': 0, 'bloqueadas': 0})
+    conceitos_chat = defaultdict(int)
+    for interacao in interacoes_chat:
+        info = chat_por_aluno[interacao.aluno_id]
+        info['total'] += 1
+        if interacao.feedback == Interacao.FEEDBACK_ERROU:
+            info['errou'] += 1
+        if interacao.bloqueada:
+            info['bloqueadas'] += 1
+        if interacao.pergunta.conceito:
+            conceitos_chat[interacao.pergunta.conceito] += 1
+
+    for dado in dados_alunos:
+        info = chat_por_aluno.get(dado['aluno'].id, {'total': 0, 'errou': 0, 'bloqueadas': 0})
+        dado['chat_total'] = info['total']
+        dado['chat_errou'] = info['errou']
+        dado['chat_bloqueadas'] = info['bloqueadas']
+
     context = {
         'grupo': grupo,
         'dados_alunos': dados_alunos,
@@ -64,6 +86,10 @@ def relatorio_grupo(request, pk):
         'total_membros': membros.count(),
         'total_concluiram': tentativas.values('aluno').distinct().count(),
         'media_pontuacao': grupo.media_pontuacao(),
+        'chat_total': len(interacoes_chat),
+        'chat_errou': sum(1 for i in interacoes_chat if i.feedback == Interacao.FEEDBACK_ERROU),
+        'chat_bloqueadas': sum(1 for i in interacoes_chat if i.bloqueada),
+        'chat_conceitos': sorted(conceitos_chat.items(), key=lambda kv: (-kv[1], kv[0])),
     }
     return render(request, 'reports/relatorio_grupo.html', context)
 
@@ -143,6 +169,30 @@ def relatorio_pdf(request, pk):
         ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
     ]))
     story.append(tbl)
+
+    # Chat IA — resumo do uso da turma
+    from apps.chat.models import Interacao
+    interacoes_chat = list(Interacao.objects.filter(grupo=grupo).select_related('pergunta'))
+    if interacoes_chat:
+        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph("Chat com a IA", styles['Heading2']))
+        erros_chat = sum(1 for i in interacoes_chat if i.feedback == Interacao.FEEDBACK_ERROU)
+        bloqueadas_chat = sum(1 for i in interacoes_chat if i.bloqueada)
+        resumo_chat = [
+            ['Perguntas feitas', str(len(interacoes_chat))],
+            ['Avaliadas como erro pela turma', str(erros_chat)],
+            ['Respostas bloqueadas pelo filtro', str(bloqueadas_chat)],
+        ]
+        tabela_chat = Table(resumo_chat, colWidths=[8*cm, 8*cm])
+        tabela_chat.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e0e7ff')),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 11),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#eef2ff')]),
+            ('PADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(tabela_chat)
 
     doc.build(story)
     buf.seek(0)

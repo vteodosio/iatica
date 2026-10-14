@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.chat.models import Interacao, PerguntaSugerida
 from apps.groups.models import GrupoEstudo, MembroGrupo
 from apps.quiz.models import Pergunta, Alternativa, TentativaQuiz, RespostaAluno
 
@@ -54,3 +55,43 @@ class RelatorioPerQuestaoTests(TestCase):
         resp = self.client.get(reverse('relatorio_grupo', args=[grupo_vazio.pk]))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['dados_perguntas'], [])
+
+
+class RelatorioChatTests(TestCase):
+    """O relatório mostra o uso do chat pela turma (F3 item 3)."""
+
+    def setUp(self):
+        self.professor = User.objects.create_user(username='prof', password='x', role=User.PROFESSOR)
+        self.grupo = GrupoEstudo.objects.create(nome='Turma', professor=self.professor)
+        self.aluno = User.objects.create_user(username='aluno', password='x', role=User.ALUNO, apelido='Ana')
+        MembroGrupo.objects.create(aluno=self.aluno, grupo=self.grupo)
+
+        pergunta = PerguntaSugerida.objects.create(ordem=1, texto='Pergunta', conceito='Alucinação')
+        Interacao.objects.create(
+            aluno=self.aluno, grupo=self.grupo, pergunta=pergunta,
+            resposta='R1', feedback=Interacao.FEEDBACK_ERROU,
+        )
+        Interacao.objects.create(
+            aluno=self.aluno, grupo=self.grupo, pergunta=pergunta, resposta='R2',
+        )
+
+    def test_relatorio_agrega_uso_do_chat(self):
+        self.client.force_login(self.professor)
+        resp = self.client.get(reverse('relatorio_grupo', args=[self.grupo.pk]))
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(resp.context['chat_total'], 2)
+        self.assertEqual(resp.context['chat_errou'], 1)
+        self.assertEqual(resp.context['chat_bloqueadas'], 0)
+        self.assertEqual(dict(resp.context['chat_conceitos']), {'Alucinação': 2})
+
+        # e também por aluno, na tabela
+        dado = resp.context['dados_alunos'][0]
+        self.assertEqual(dado['chat_total'], 2)
+        self.assertEqual(dado['chat_errou'], 1)
+
+    def test_pdf_inclui_secao_do_chat(self):
+        self.client.force_login(self.professor)
+        resp = self.client.get(reverse('relatorio_pdf', args=[self.grupo.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'application/pdf')

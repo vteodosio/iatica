@@ -72,6 +72,7 @@
           <th>Lições Lidas</th>
           <th>Quiz</th>
           <th>Percentual</th>
+          <th>Perguntas 💬</th>
         </tr>
       </thead>
       <tbody>
@@ -101,9 +102,10 @@
               {% endwith %}
             {% else %}—{% endif %}
           </td>
+          <td>{% if d.chat_total %}{{ d.chat_total }}{% else %}—{% endif %}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">Nenhum aluno no grupo ainda.</td></tr>
+        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted);">Nenhum aluno no grupo ainda.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -143,6 +145,44 @@
       <p style="font-weight:700;">Nenhum quiz concluído ainda.</p>
     </div>
     {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+  <div class="card-header">💬 Chat com a IA</div>
+  <div class="card-body">
+    <div class="stat-row" style="margin-bottom:1rem;">
+      <div class="stat-box">
+        <div class="val">{{ chat_total }}</div>
+        <div class="lbl">Perguntas feitas</div>
+      </div>
+      <div class="stat-box">
+        <div class="val">{{ chat_errou }}</div>
+        <div class="lbl">🤔 Marcadas como erro</div>
+      </div>
+      <div class="stat-box">
+        <div class="val">{{ chat_bloqueadas }}</div>
+        <div class="lbl">🛡️ Bloqueadas</div>
+      </div>
+    </div>
+
+    {% if chat_conceitos %}
+      <div style="font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">
+        Conceitos mais perguntados
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        {% for conceito, qtd in chat_conceitos %}
+          <span class="badge badge-info">{{ conceito }} · {{ qtd }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color:var(--muted);font-weight:600;font-size:.9rem;">Nenhuma pergunta ao chat ainda.</p>
+    {% endif %}
+
+    <p style="color:var(--muted);font-size:.82rem;font-weight:600;margin-top:1rem;">
+      🤔 "Marcadas como erro" são as vezes em que os alunos avaliaram que a IA errou —
+      um ótimo gancho para retomar a lição 3 (alucinações) em sala.
+    </p>
   </div>
 </div>
 {% endblock %}

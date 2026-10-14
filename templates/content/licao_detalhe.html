@@ -96,6 +96,11 @@
     <div class="lesson-nav">
       <a href="{% url 'sala_estudo' grupo.pk %}" class="btn btn-outline">← Voltar à Sala</a>
       <div style="display:flex;gap:.7rem;flex-wrap:wrap;">
+        {% if chat_ativo %}
+        <a href="{% url 'chat' grupo.pk %}?licao={{ licao.pk }}" class="btn" style="background:var(--indigo);color:var(--on-accent);">
+          💬 Perguntar sobre esta lição
+        </a>
+        {% endif %}
         {% if licao.pk not in progresso %}
         <button id="btn-marcar" onclick="marcarLida()" class="btn btn-success">
           ✅ Marcar como Lida

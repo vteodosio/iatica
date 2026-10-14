@@ -2,6 +2,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.accounts.models import User
+from apps.content.models import Licao
 from apps.groups.models import GrupoEstudo, MembroGrupo
 
 from .models import Interacao, PerguntaSugerida
@@ -203,3 +204,91 @@ class FallbackCoberturaTests(TestCase):
                 item['texto'], RESPOSTAS_FALLBACK,
                 msg=f"Falta resposta de apoio para: {item['texto']}",
             )
+
+
+@override_settings(LLM_PROVIDER='mock')
+class ChatFeedbackTests(TestCase):
+    """O aluno avalia a resposta da IA: ajudou / acho que a IA errou."""
+
+    def setUp(self):
+        self.professor = User.objects.create_user(username='prof', password='x', role=User.PROFESSOR)
+        self.grupo = GrupoEstudo.objects.create(nome='Turma', professor=self.professor)
+        self.aluno = User.objects.create_user(username='aluno', password='x', role=User.ALUNO, apelido='Ana')
+        self.outro = User.objects.create_user(username='outro', password='x', role=User.ALUNO, apelido='Bia')
+        MembroGrupo.objects.create(aluno=self.aluno, grupo=self.grupo)
+        MembroGrupo.objects.create(aluno=self.outro, grupo=self.grupo)
+
+        self.pergunta = PerguntaSugerida.objects.create(ordem=1, texto='Pergunta qualquer')
+        self.interacao = Interacao.objects.create(
+            aluno=self.aluno, grupo=self.grupo,
+            pergunta=self.pergunta, resposta='Resposta qualquer',
+        )
+        self.url = reverse('chat_feedback', args=[self.grupo.pk, self.interacao.pk])
+
+    def _session(self, aluno):
+        s = self.client.session
+        s['aluno_id'] = aluno.pk
+        s.save()
+
+    def test_marca_que_ajudou(self):
+        self._session(self.aluno)
+        resp = self.client.post(self.url, {'feedback': 'ajudou'})
+        self.assertRedirects(resp, reverse('chat', args=[self.grupo.pk]))
+        self.interacao.refresh_from_db()
+        self.assertEqual(self.interacao.feedback, Interacao.FEEDBACK_AJUDOU)
+
+    def test_marca_que_a_ia_errou(self):
+        self._session(self.aluno)
+        self.client.post(self.url, {'feedback': 'errou'})
+        self.interacao.refresh_from_db()
+        self.assertEqual(self.interacao.feedback, Interacao.FEEDBACK_ERROU)
+
+    def test_valor_invalido_nao_altera(self):
+        self._session(self.aluno)
+        self.client.post(self.url, {'feedback': 'qualquer coisa'})
+        self.interacao.refresh_from_db()
+        self.assertEqual(self.interacao.feedback, '')
+
+    def test_outro_aluno_nao_pode_avaliar(self):
+        self._session(self.outro)
+        resp = self.client.post(self.url, {'feedback': 'ajudou'})
+        self.assertEqual(resp.status_code, 404)
+        self.interacao.refresh_from_db()
+        self.assertEqual(self.interacao.feedback, '')
+
+
+@override_settings(LLM_PROVIDER='mock')
+class ChatPerguntasPorLicaoTests(TestCase):
+    """As perguntas aparecem agrupadas por lição e podem ser filtradas."""
+
+    def setUp(self):
+        self.professor = User.objects.create_user(username='prof', password='x', role=User.PROFESSOR)
+        self.grupo = GrupoEstudo.objects.create(nome='Turma', professor=self.professor)
+        self.aluno = User.objects.create_user(username='aluno', password='x', role=User.ALUNO, apelido='Ana')
+        MembroGrupo.objects.create(aluno=self.aluno, grupo=self.grupo)
+
+        self.licao1 = Licao.objects.create(titulo='Lição Um', conteudo_html='<p>x</p>', ordem=1, ativa=True)
+        self.licao2 = Licao.objects.create(titulo='Lição Dois', conteudo_html='<p>x</p>', ordem=2, ativa=True)
+        PerguntaSugerida.objects.create(ordem=1, texto='Pergunta da lição um', licao=self.licao1)
+        PerguntaSugerida.objects.create(ordem=2, texto='Pergunta da lição dois', licao=self.licao2)
+
+        self.url = reverse('chat', args=[self.grupo.pk])
+        s = self.client.session
+        s['aluno_id'] = self.aluno.pk
+        s.save()
+
+    def test_mostra_todas_agrupadas_por_licao(self):
+        html = self.client.get(self.url).content.decode('utf-8', 'replace')
+        self.assertIn('Lição Um', html)
+        self.assertIn('Lição Dois', html)
+        self.assertIn('Pergunta da lição um', html)
+        self.assertIn('Pergunta da lição dois', html)
+
+    def test_filtra_por_licao(self):
+        html = self.client.get(self.url, {'licao': self.licao1.pk}).content.decode('utf-8', 'replace')
+        self.assertIn('Pergunta da lição um', html)
+        self.assertNotIn('Pergunta da lição dois', html)
+
+    def test_licao_invalida_nao_quebra(self):
+        resp = self.client.get(self.url, {'licao': 'nao-e-numero'})
+        self.assertEqual(resp.status_code, 200)

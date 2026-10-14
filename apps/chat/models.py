@@ -34,6 +34,13 @@ class PerguntaSugerida(models.Model):
 class Interacao(models.Model):
     """Uma troca pergunta → resposta entre um aluno e a IA."""
 
+    FEEDBACK_AJUDOU = 'ajudou'
+    FEEDBACK_ERROU = 'errou'
+    FEEDBACK_CHOICES = [
+        (FEEDBACK_AJUDOU, 'Ajudou'),
+        (FEEDBACK_ERROU, 'Acho que a IA errou'),
+    ]
+
     aluno = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -53,6 +60,12 @@ class Interacao(models.Model):
     )
     resposta = models.TextField(verbose_name='Resposta da IA')
     bloqueada = models.BooleanField(default=False, verbose_name='Bloqueada')
+    feedback = models.CharField(
+        max_length=10,
+        choices=FEEDBACK_CHOICES,
+        blank=True,
+        verbose_name='Avaliação do aluno',
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:

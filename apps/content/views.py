@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
@@ -35,6 +36,7 @@ def licao_detalhe(request, grupo_pk, licao_pk):
         'progresso': progresso_ids,
         'proxima': proxima,
         'aluno_nome': request.session.get('aluno_nome', 'Aluno'),
+        'chat_ativo': settings.CHAT_ATIVO,
     })
 
 

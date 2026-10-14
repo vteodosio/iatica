@@ -13,9 +13,9 @@ class PerguntaSugeridaAdmin(admin.ModelAdmin):
 
 @admin.register(Interacao)
 class InteracaoAdmin(admin.ModelAdmin):
-    list_display = ('criado_em', 'aluno', 'grupo', 'pergunta', 'bloqueada')
-    list_filter = ('bloqueada',)
-    readonly_fields = ('aluno', 'grupo', 'pergunta', 'resposta', 'bloqueada', 'criado_em')
+    list_display = ('criado_em', 'aluno', 'grupo', 'pergunta', 'bloqueada', 'feedback')
+    list_filter = ('bloqueada', 'feedback')
+    readonly_fields = ('aluno', 'grupo', 'pergunta', 'resposta', 'bloqueada', 'feedback', 'criado_em')
 
     def has_add_permission(self, request):
         # Interações são geradas pelo uso do chat, não cadastradas à mão.

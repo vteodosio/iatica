@@ -62,6 +62,31 @@
     margin-bottom: .2rem;
   }
 
+  /* Feedback do aluno sobre a resposta (item 1 do F3) */
+  .feedback-row {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    margin: -.2rem 0 .9rem .3rem;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .feedback-row form { margin: 0; }
+  .feedback-btn {
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 50px;
+    padding: .25rem .7rem;
+    font-family:'Nunito',sans-serif;
+    font-size: .8rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .feedback-btn:hover { border-color: var(--indigo); }
+  .feedback-btn.ativo { background: var(--soft-blue-bg); color: var(--soft-blue-fg); border-color: var(--blue); }
+  .feedback-btn.ativo-erro { background: var(--soft-amber-bg); color: var(--soft-amber-fg); border-color: var(--amber); }
+
   .aviso {
     display: flex; align-items: flex-start; gap: .6rem;
     background: var(--soft-blue-bg);
@@ -74,11 +99,31 @@
     margin-bottom: 1.25rem;
   }
 
+  .filtro-licao {
+    background: var(--amber-l);
+    border: 1px solid var(--amber);
+    border-radius: 12px;
+    padding: .6rem .9rem;
+    font-size: .86rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  }
+
   .pergunta-titulo {
     font-family:'Fredoka One',cursive;
     font-size: 1.15rem;
     color: var(--amber-d);
     margin-bottom: .7rem;
+  }
+  .grupo-licao { margin-bottom: 1.2rem; }
+  .grupo-licao-titulo {
+    font-size: .82rem;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .5rem;
   }
   .pergunta-grid { display: grid; gap: .6rem; }
   .pergunta-grid form { margin: 0; }
@@ -97,11 +142,12 @@
     transition: border-color .15s, background .15s, transform .15s;
     display: flex; align-items: center; gap: .6rem;
   }
-  .pergunta-btn:hover {
+  .pergunta-btn:hover:not(:disabled) {
     border-color: var(--indigo);
     background: var(--soft-purple-bg);
     transform: translateX(3px);
   }
+  .pergunta-btn:disabled { opacity: .55; cursor: progress; }
   .pergunta-btn .conceito {
     margin-left: auto;
     font-size: .7rem;
@@ -109,6 +155,21 @@
     color: var(--muted);
     white-space: nowrap;
   }
+
+  /* Item 4: estado de espera */
+  .pensando {
+    display: none;
+    align-items: center; gap: .6rem;
+    background: var(--surface-2);
+    border: 2px dashed var(--indigo);
+    border-radius: 14px;
+    padding: .8rem 1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 700;
+    color: var(--indigo);
+  }
+  .pensando .pontos { animation: piscar 1s steps(3, end) infinite; }
+  @keyframes piscar { 0% { opacity: .3; } 50% { opacity: 1; } 100% { opacity: .3; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -126,9 +187,16 @@
     <span style="font-size:1.2rem;">🤔</span>
     <span>
       A IA pode errar — <strong>confira sempre!</strong>
-      As conversas ficam visíveis para o seu professor(a).
+      Se ela errar, marque abaixo. As conversas ficam visíveis para o seu professor(a).
     </span>
   </div>
+
+  {% if licao_atual %}
+  <div class="filtro-licao">
+    <span>📚 Mostrando só perguntas da lição: <strong>{{ licao_atual.titulo }}</strong></span>
+    <a href="{% url 'chat' grupo.pk %}" class="btn btn-outline btn-sm">ver todas</a>
+  </div>
+  {% endif %}
 
   <div class="chat-thread">
     {% for i in interacoes %}
@@ -138,6 +206,21 @@
       <div class="bubble bubble-ia {% if i.bloqueada %}bubble-bloqueada{% endif %}">
         <span class="bubble-rotulo">{% if i.bloqueada %}🛡️ Filtro de segurança{% else %}🤖 Tuca (IA){% endif %}</span>{{ i.resposta }}
       </div>
+      {% if not i.bloqueada %}
+      <div class="feedback-row">
+        <span>Essa resposta:</span>
+        <form method="post" action="{% url 'chat_feedback' grupo.pk i.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="feedback" value="ajudou">
+          <button type="submit" class="feedback-btn {% if i.feedback == 'ajudou' %}ativo{% endif %}">👍 Ajudou</button>
+        </form>
+        <form method="post" action="{% url 'chat_feedback' grupo.pk i.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="feedback" value="errou">
+          <button type="submit" class="feedback-btn {% if i.feedback == 'errou' %}ativo-erro{% endif %}">🤔 Acho que a IA errou</button>
+        </form>
+      </div>
+      {% endif %}
     {% empty %}
       <div class="chat-empty">
         <div style="font-size:2.5rem;">💬</div>
@@ -146,28 +229,60 @@
     {% endfor %}
   </div>
 
-  <div class="pergunta-titulo">❓ Perguntas para fazer</div>
-  <div class="pergunta-grid">
-    {% for p in perguntas %}
-      <form method="post" action="{% url 'chat' grupo.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="pergunta_id" value="{{ p.pk }}">
-        <button type="submit" class="pergunta-btn">
-          <span>💬</span>
-          <span>{{ p.texto }}</span>
-          {% if p.conceito %}<span class="conceito">{{ p.conceito }}</span>{% endif %}
-        </button>
-      </form>
-    {% empty %}
-      <p style="color:var(--muted);font-weight:600;">
-        Nenhuma pergunta disponível ainda. Peça ao seu professor(a).
-      </p>
-    {% endfor %}
+  <div class="pensando" id="pensando">
+    <span style="font-size:1.3rem;">🤖</span>
+    <span>A IA está pensando<span class="pontos">...</span></span>
   </div>
+
+  <div class="pergunta-titulo">❓ Perguntas para fazer</div>
+
+  {% for grupo_licao in grupos_perguntas %}
+    <div class="grupo-licao">
+      <div class="grupo-licao-titulo">
+        {% if grupo_licao.licao %}
+          {{ grupo_licao.licao.icone }} {{ grupo_licao.licao.titulo }}
+        {% else %}
+          Outras perguntas
+        {% endif %}
+      </div>
+      <div class="pergunta-grid">
+        {% for p in grupo_licao.perguntas %}
+          <form class="pergunta-form" method="post" action="{% url 'chat' grupo.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="pergunta_id" value="{{ p.pk }}">
+            <button type="submit" class="pergunta-btn">
+              <span>💬</span>
+              <span>{{ p.texto }}</span>
+              {% if p.conceito %}<span class="conceito">{{ p.conceito }}</span>{% endif %}
+            </button>
+          </form>
+        {% endfor %}
+      </div>
+    </div>
+  {% empty %}
+    <p style="color:var(--muted);font-weight:600;">
+      Nenhuma pergunta disponível ainda. Peça ao seu professor(a).
+    </p>
+  {% endfor %}
 
   <div style="margin-top:1.5rem;">
     <a href="{% url 'sala_estudo' grupo.pk %}" class="btn btn-outline">← Voltar à Sala de Estudos</a>
   </div>
 
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  /* Item 4: ao enviar, mostra "a IA está pensando..." e trava os botões
+     (evita clique duplo enquanto a resposta é gerada). */
+  document.querySelectorAll('.pergunta-form').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      document.querySelectorAll('.pergunta-btn').forEach(function (botao) {
+        botao.disabled = true;
+      });
+      var pensando = document.getElementById('pensando');
+      if (pensando) { pensando.style.display = 'flex'; }
+    });
+  });
+</script>
 {% endblock %}
